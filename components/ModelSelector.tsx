@@ -8,6 +8,12 @@ interface ModelSelectorProps {
   onSelect: (provider: AIProvider, firecrawlKey: string) => void;
 }
 
+const API_KEY_LINKS = {
+  openai: 'https://platform.openai.com/docs/quickstart',
+  gemini: 'https://aistudio.google.com/welcome',
+  claude: 'https://platform.claude.com/docs/en/get-started',
+};
+
 export default function ModelSelector({ onSelect }: ModelSelectorProps) {
   const router = useRouter();
   const [provider, setProvider] = useState<'openai' | 'gemini' | 'claude'>('openai');
@@ -39,11 +45,12 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
   }, []);
 
   const loadClaudeModels = () => {
+    // Latest Claude models from https://platform.claude.com/docs/en/about-claude/models/overview
     const claudeModels = [
-      'claude-3-5-sonnet-20241022',
-      'claude-3-opus-20240229',
-      'claude-3-sonnet-20240229',
-      'claude-3-haiku-20240307',
+      'claude-sonnet-4-5-20250929',
+      'claude-haiku-4-5-20251001',
+      'claude-opus-4-5-20251101',
+      'claude-opus-4-1-20250805',
     ];
     setModels(claudeModels);
     if (!selectedModel && claudeModels.length > 0) {
@@ -134,6 +141,9 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
           <p className="mt-2 text-center text-sm text-gray-600">
             Select your AI provider and configure API keys
           </p>
+          <p className="mt-2 text-center text-xs text-red-600">
+            API keys are only stored locally in your browser. Save your keys in a safe spot in case you need them again.
+          </p>
         </div>
 
         {error && (
@@ -175,6 +185,14 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your API key"
             />
+            <a
+              href={API_KEY_LINKS[provider]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 inline-block"
+            >
+              Don't have an API key? Get one here →
+            </a>
             {provider !== 'claude' && (
               <button
                 onClick={fetchModels}
@@ -216,6 +234,14 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your Firecrawl API key"
             />
+            <a
+              href="https://docs.firecrawl.dev/introduction"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 inline-block"
+            >
+              Get your Firecrawl API key here →
+            </a>
           </div>
 
           <button
@@ -230,4 +256,3 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
     </div>
   );
 }
-

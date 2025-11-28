@@ -92,9 +92,7 @@ export default function BuildPage() {
       // Step 1: Firecrawl extraction
       setProgress({
         step: 'firecrawl',
-        message: 'Crawling landing pages...',
-        current: 0,
-        total: validUrls.length,
+        message: 'Crawling landing pages - this may take a minute...',
       });
 
       const firecrawlResponse = await fetch('/api/firecrawl', {

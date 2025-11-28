@@ -198,6 +198,9 @@ export default function ResultsPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{campaign.name}</h1>
             <p className="text-sm text-gray-600 mt-1">{campaign.goal}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Provider: {campaign.provider.name} | Model: {campaign.provider.model}
+            </p>
           </div>
           <button
             onClick={() => {
@@ -210,7 +213,7 @@ export default function ResultsPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {campaign.adgroups.map((adgroup, index) => (
             <AdgroupCard
               key={adgroup.id || index}

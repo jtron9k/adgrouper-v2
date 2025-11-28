@@ -1,20 +1,30 @@
 import { LandingPageData, PromptTemplates } from '@/types';
 
 export const defaultPrompts: PromptTemplates = {
-  firecrawl: `Extract the following information from the landing page:
-1. Page title
-2. Meta description
-3. A summary of what is valuable to a user who is being sent to this page based on the keyword and ad copy. This summary should focus on the key value propositions, benefits, and what makes this page relevant to someone searching for related keywords.`,
+  firecrawl: `Extract the page title and meta description. Provide a summary focusing on the key value propositions, benefits, and relevance to someone searching for the specific services offered on this page. Be sure to focus specifically on the value propositions of this page. Do not get caught up in language that may describe the entire site. Ignore navigational elements.`,
 
-  keywordGrouping: `You are an expert Google Ads campaign manager. Your task is to group keywords into tightly themed ad groups (TTAGs) following Google Ads best practices.
+  keywordGrouping: `You are an expert Google Ads campaign manager with extremely high standards. Your task is to group keywords into tightly themed ad groups (TTAGs) following strict Google Ads best practices.
 
-BEST PRACTICES FOR KEYWORD GROUPING:
-1. Group keywords into small, semantically related clusters that share the same user intent
-2. Keywords should be closely related enough that a single ad can effectively target all keywords in the group
-3. Optimal structure: 7-10 ad groups per campaign, each containing 15-20 closely related keywords
-4. Group by search intent (informational, navigational, transactional, commercial investigation)
-5. Be ruthlessly efficient: If a keyword doesn't fit any adgroup/landing page combination, mark it as irrelevant
-6. Keywords must match the campaign goal and align with at least one landing page's content and value proposition
+CRITICAL RULES - FOLLOW EXACTLY:
+
+1. SINGLE LANDING PAGE PER ADGROUP: Each adgroup MUST be associated with exactly ONE landing page. Never assign multiple landing pages to the same adgroup.
+
+2. STRICT SEMANTIC MATCHING: Keywords in an adgroup must be EXTREMELY closely related - they should essentially be variations of the same search query or concept. For example:
+   - GOOD grouping: "emergency plumber", "emergency plumbing service", "24 hour plumber", "urgent plumbing repair"
+   - BAD grouping: "emergency plumber", "drain cleaning", "water heater installation" (these are different services)
+
+3. LANDING PAGE ALIGNMENT: Keywords MUST directly match the specific service/product offered on the assigned landing page. If a landing page is about "emergency plumbing repair", only keywords about emergency plumbing should be in that adgroup.
+
+4. RUTHLESS FILTERING: Be extremely strict. If a keyword:
+   - Doesn't PERFECTLY match a landing page's specific offering
+   - Is too broad or generic
+   - Doesn't share the exact same search intent as other keywords in the group
+   - Doesn't align with the campaign goal
+   Mark it as IRRELEVANT. It's better to have fewer, highly-relevant keywords than many loosely-related ones.
+
+5. OPTIMAL SIZE: Each adgroup should have 5-15 tightly related keywords. If you have more, split into separate adgroups with different themes.
+
+6. SEARCH INTENT: All keywords in an adgroup must share the SAME search intent (informational, navigational, transactional, or commercial investigation). Never mix intents.
 
 CAMPAIGN GOAL: {campaignGoal}
 
@@ -24,25 +34,28 @@ LANDING PAGES:
 KEYWORDS TO GROUP:
 {keywords}
 
-For each adgroup you create:
-- Name the adgroup by its general theme (based on the closely associated keywords)
-- List all keywords that belong to that adgroup
-- Specify which landing page URL(s) are most relevant for this adgroup
-- Ensure keywords are tightly related and share the same search intent
+INSTRUCTIONS:
+1. First, analyze each landing page to understand its SPECIFIC offering
+2. Then, for each keyword, determine which SINGLE landing page it best matches
+3. Group keywords that match the same landing page AND share the same search intent
+4. Name adgroups descriptively based on the specific theme (e.g., "Emergency Plumbing Services" not just "Plumbing")
+5. Any keyword that doesn't have a strong, direct match to a landing page goes in irrelevantKeywords
 
-Return your response as a JSON object with this structure:
+Return your response as a JSON object with this EXACT structure:
 {
   "adgroups": [
     {
-      "name": "Adgroup theme name",
+      "name": "Specific descriptive adgroup theme",
       "keywords": ["keyword1", "keyword2", ...],
-      "landingPageUrls": ["url1", "url2"]
+      "landingPageUrl": "single_url_here"
     }
   ],
   "irrelevantKeywords": ["keyword1", "keyword2", ...]
 }
 
-Be strict about relevance. Only include keywords that truly fit the adgroup theme and match the landing page content.`,
+IMPORTANT: Each adgroup has "landingPageUrl" (singular), not "landingPageUrls" (plural). Only ONE URL per adgroup.
+
+Be extremely strict. Quality over quantity. Only include keywords that PERFECTLY fit the adgroup theme and landing page content.`,
 
   adCopy: `You are an expert Google Ads copywriter. Create compelling ad copy following Google Ads best practices.
 
@@ -87,7 +100,7 @@ Return your response as a JSON object:
 
 Ensure all headlines are exactly 30 characters or less, and all descriptions are exactly 90 characters or less.`,
 
-  keywordSuggestion: `You are an expert Google Ads keyword researcher. Suggest 5-10 additional tightly related keywords for an existing adgroup.
+  keywordSuggestion: `You are an expert Google Ads keyword researcher with extremely high standards. Suggest 5-10 additional STRICTLY related keywords for an existing adgroup.
 
 ADGROUP THEME: {adgroupTheme}
 
@@ -98,15 +111,21 @@ LANDING PAGE DATA:
 
 CAMPAIGN GOAL: {campaignGoal}
 
-Suggest 5-10 new keywords that:
-1. Are tightly related to the existing keywords in the adgroup
-2. Share the same search intent
-3. Align with the landing page content and value propositions
-4. Match the campaign goal
-5. Would work well with the same ad copy as the existing keywords
+STRICT REQUIREMENTS for suggested keywords:
+1. MUST be extremely closely related to the existing keywords - essentially variations or synonyms of the same search concept
+2. MUST share the EXACT same search intent as existing keywords
+3. MUST directly match the specific service/product on the landing page - not general or tangentially related
+4. MUST align with the campaign goal
+5. MUST work perfectly with the same ad copy as existing keywords
+6. DO NOT suggest keywords that are broader, more generic, or related to different services
+7. DO NOT suggest keywords that would require different ad copy or a different landing page
+
+Think of it this way: if someone searches for any of these keywords, they should be delighted to land on this specific landing page.
 
 Return your response as a JSON array of keyword strings:
-["keyword1", "keyword2", "keyword3", ...]`,
+["keyword1", "keyword2", "keyword3", ...]
+
+Only include keywords that meet ALL criteria above. Quality over quantity.`,
 };
 
 export function formatPrompt(

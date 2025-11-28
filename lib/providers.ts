@@ -23,12 +23,12 @@ export async function getGeminiModels(apiKey: string): Promise<string[]> {
 }
 
 export function getClaudeModels(): string[] {
-  // Claude models are hardcoded per requirements
+  // Claude models are hardcoded per requirements - latest models from https://platform.claude.com/docs/en/about-claude/models/overview
   return [
-    'claude-3-5-sonnet-20241022',
-    'claude-3-opus-20240229',
-    'claude-3-sonnet-20240229',
-    'claude-3-haiku-20240307',
+    'claude-sonnet-4-5-20250929',
+    'claude-haiku-4-5-20251001',
+    'claude-opus-4-5-20251101',
+    'claude-opus-4-1-20250805',
   ];
 }
 

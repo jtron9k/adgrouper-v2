@@ -61,17 +61,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate IDs for adgroups and associate landing page data
-    const adgroups = parsed.adgroups.map((ag: any, index: number) => ({
-      id: `adgroup-${index + 1}`,
-      name: ag.name,
-      keywords: ag.keywords.map((k: string) => ({ text: k, removed: false })),
-      landingPageUrls: ag.landingPageUrls || [],
-      landingPageData: (landingPageData as LandingPageData[]).filter(
-        (lp) => ag.landingPageUrls?.includes(lp.url)
-      )),
-      headlines: [],
-      descriptions: [],
-    }));
+    // Handle both singular landingPageUrl and plural landingPageUrls for compatibility
+    const adgroups = parsed.adgroups.map((ag: any, index: number) => {
+      // Prioritize singular landingPageUrl, fall back to landingPageUrls array
+      let urls: string[] = [];
+      if (ag.landingPageUrl) {
+        urls = [ag.landingPageUrl];
+      } else if (ag.landingPageUrls && Array.isArray(ag.landingPageUrls)) {
+        urls = ag.landingPageUrls.slice(0, 1); // Only take the first one
+      }
+
+      return {
+        id: `adgroup-${index + 1}`,
+        name: ag.name,
+        keywords: ag.keywords.map((k: string) => ({ text: k, removed: false })),
+        landingPageUrls: urls,
+        landingPageData: (landingPageData as LandingPageData[]).filter(
+          (lp) => urls.includes(lp.url)
+        ),
+        headlines: [],
+        descriptions: [],
+      };
+    });
 
     return NextResponse.json({
       adgroups,

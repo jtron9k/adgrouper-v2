@@ -7,6 +7,26 @@ interface FirecrawlResultsProps {
   landingPageData: LandingPageData[];
 }
 
+// External link icon component
+function ExternalLinkIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-4 w-4 inline-block ml-1"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+      />
+    </svg>
+  );
+}
+
 export default function FirecrawlResults({ landingPageData }: FirecrawlResultsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -26,8 +46,14 @@ export default function FirecrawlResults({ landingPageData }: FirecrawlResultsPr
           {landingPageData.map((data, index) => (
             <div key={index} className="border-b border-gray-200 pb-4 last:border-b-0">
               <h4 className="font-semibold text-sm text-gray-900 mb-2">
-                <a href={data.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                <a
+                  href={data.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline break-all"
+                >
                   {data.url}
+                  <ExternalLinkIcon />
                 </a>
               </h4>
               <div className="space-y-2 text-sm">
@@ -51,4 +77,3 @@ export default function FirecrawlResults({ landingPageData }: FirecrawlResultsPr
     </div>
   );
 }
-
