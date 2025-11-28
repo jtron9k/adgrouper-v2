@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
 
     const buffer = generateExcelFile(campaign as Campaign);
 
-    return new NextResponse(buffer, {
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const uint8Array = new Uint8Array(buffer);
+
+    return new NextResponse(uint8Array, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename="${(campaign as Campaign).name || 'campaign'}.xlsx"`,
