@@ -9,7 +9,8 @@ import KeywordList from '@/components/KeywordList';
 export default function ResultsPage() {
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [loadingKeywords, setLoadingKeywords] = useState<Record<string, boolean>>({});
+  const [loadingAds, setLoadingAds] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const savedData = sessionStorage.getItem('campaignData');
@@ -25,11 +26,20 @@ export default function ResultsPage() {
     if (!campaign) return;
 
     const updatedAdgroups = [...campaign.adgroups];
-    updatedAdgroups[adgroupIndex].keywords[keywordIndex].removed = true;
+    const removedKeyword = updatedAdgroups[adgroupIndex].keywords[keywordIndex];
+    
+    // Remove the keyword from the adgroup
+    updatedAdgroups[adgroupIndex].keywords = updatedAdgroups[adgroupIndex].keywords.filter(
+      (_, i) => i !== keywordIndex
+    );
+    
+    // Add it to the irrelevant keywords list
+    const updatedIrrelevantKeywords = [...(campaign.irrelevantKeywords || []), removedKeyword.text];
     
     setCampaign({
       ...campaign,
       adgroups: updatedAdgroups,
+      irrelevantKeywords: updatedIrrelevantKeywords,
     });
   };
 
@@ -49,7 +59,7 @@ export default function ResultsPage() {
     if (!campaign) return;
 
     const adgroup = campaign.adgroups[adgroupIndex];
-    setLoading({ ...loading, [`keywords-${adgroupIndex}`]: true });
+    setLoadingKeywords({ ...loadingKeywords, [adgroupIndex]: true });
 
     try {
       const response = await fetch('/api/suggest-keywords', {
@@ -89,7 +99,7 @@ export default function ResultsPage() {
       console.error('Error generating keywords:', error);
       alert('Failed to generate keywords. Please try again.');
     } finally {
-      setLoading({ ...loading, [`keywords-${adgroupIndex}`]: false });
+      setLoadingKeywords({ ...loadingKeywords, [adgroupIndex]: false });
     }
   };
 
@@ -97,14 +107,20 @@ export default function ResultsPage() {
     if (!campaign) return;
 
     const adgroup = campaign.adgroups[adgroupIndex];
-    setLoading({ ...loading, [`ads-${adgroupIndex}`]: true });
+    setLoadingAds({ ...loadingAds, [adgroupIndex]: true });
 
     try {
+      // Only include non-removed keywords in the request
+      const activeKeywords = adgroup.keywords.filter(k => !k.removed);
+      
       const response = await fetch('/api/generate-ads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          adgroupData: adgroup,
+          adgroupData: {
+            ...adgroup,
+            keywords: activeKeywords,
+          },
           landingPageData: adgroup.landingPageData,
           campaignGoal: campaign.goal,
           adCopyPrompt: campaign.prompts?.adCopy,
@@ -130,7 +146,7 @@ export default function ResultsPage() {
       console.error('Error regenerating ads:', error);
       alert('Failed to regenerate ads. Please try again.');
     } finally {
-      setLoading({ ...loading, [`ads-${adgroupIndex}`]: false });
+      setLoadingAds({ ...loadingAds, [adgroupIndex]: false });
     }
   };
 
@@ -223,7 +239,8 @@ export default function ResultsPage() {
               onRegenerateAds={() => handleRegenerateAds(index)}
               onHeadlineChange={(headlineIndex, value) => handleHeadlineChange(index, headlineIndex, value)}
               onDescriptionChange={(descriptionIndex, value) => handleDescriptionChange(index, descriptionIndex, value)}
-              loading={loading[`keywords-${index}`] || loading[`ads-${index}`] || false}
+              loadingKeywords={loadingKeywords[index] || false}
+              loadingAds={loadingAds[index] || false}
             />
           ))}
         </div>
@@ -250,4 +267,3 @@ export default function ResultsPage() {
     </div>
   );
 }
-

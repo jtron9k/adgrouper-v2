@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Adgroup } from '@/types';
 import KeywordList from './KeywordList';
 import FirecrawlResults from './FirecrawlResults';
@@ -13,7 +12,8 @@ interface AdgroupCardProps {
   onRegenerateAds: () => void;
   onHeadlineChange: (index: number, value: string) => void;
   onDescriptionChange: (index: number, value: string) => void;
-  loading?: boolean;
+  loadingKeywords?: boolean;
+  loadingAds?: boolean;
 }
 
 export default function AdgroupCard({
@@ -23,8 +23,12 @@ export default function AdgroupCard({
   onRegenerateAds,
   onHeadlineChange,
   onDescriptionChange,
-  loading = false,
+  loadingKeywords = false,
+  loadingAds = false,
 }: AdgroupCardProps) {
+  // Filter out removed keywords for display
+  const activeKeywords = adgroup.keywords.filter(k => !k.removed);
+
   return (
     <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">{adgroup.name}</h3>
@@ -32,15 +36,31 @@ export default function AdgroupCard({
       <div className="mb-4">
         <h4 className="font-medium text-sm text-gray-700 mb-2">Keywords</h4>
         <KeywordList
-          keywords={adgroup.keywords}
-          onRemove={onRemoveKeyword}
+          keywords={activeKeywords}
+          onRemove={(displayIndex) => {
+            // Find the actual index in the original array
+            let actualIndex = -1;
+            let displayCount = 0;
+            for (let i = 0; i < adgroup.keywords.length; i++) {
+              if (!adgroup.keywords[i].removed) {
+                if (displayCount === displayIndex) {
+                  actualIndex = i;
+                  break;
+                }
+                displayCount++;
+              }
+            }
+            if (actualIndex !== -1) {
+              onRemoveKeyword(actualIndex);
+            }
+          }}
         />
         <button
           onClick={onGenerateMoreKeywords}
-          disabled={loading}
+          disabled={loadingKeywords}
           className="mt-2 text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
         >
-          {loading ? 'Generating...' : '+ Generate More Keywords'}
+          {loadingKeywords ? 'Generating...' : '+ Generate More Keywords'}
         </button>
       </div>
 
@@ -51,10 +71,10 @@ export default function AdgroupCard({
           <h4 className="font-medium text-sm text-gray-700">Ad Copy</h4>
           <button
             onClick={onRegenerateAds}
-            disabled={loading}
+            disabled={loadingAds}
             className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
           >
-            {loading ? 'Regenerating...' : 'Regenerate Ads'}
+            {loadingAds ? 'Regenerating...' : 'Regenerate Ads'}
           </button>
         </div>
         <EditableAdCopy
@@ -67,6 +87,3 @@ export default function AdgroupCard({
     </div>
   );
 }
-
-
-

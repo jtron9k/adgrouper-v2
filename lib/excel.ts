@@ -2,10 +2,14 @@ import * as XLSX from 'xlsx';
 import { Campaign, Adgroup } from '@/types';
 
 export function generateExcelFile(campaign: Campaign): Buffer {
-  const rows: any[] = [];
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+
+  // === Tab 1: Campaign Data ===
+  const campaignRows: any[] = [];
 
   // Add header row
-  rows.push([
+  campaignRows.push([
     'Campaign Name',
     'Adgroup Name',
     'Keyword',
@@ -23,7 +27,7 @@ export function generateExcelFile(campaign: Campaign): Buffer {
       .filter(k => !k.removed)
       .forEach((keyword) => {
         const landingPageUrl = adgroup.landingPageUrls[0] || '';
-        rows.push([
+        campaignRows.push([
           campaign.name,
           adgroup.name,
           keyword.text,
@@ -37,15 +41,26 @@ export function generateExcelFile(campaign: Campaign): Buffer {
       });
   });
 
-  // Create workbook and worksheet
-  const worksheet = XLSX.utils.aoa_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Campaign');
+  const campaignSheet = XLSX.utils.aoa_to_sheet(campaignRows);
+  XLSX.utils.book_append_sheet(workbook, campaignSheet, 'Campaign');
+
+  // === Tab 2: Irrelevant Keywords ===
+  const irrelevantRows: any[] = [];
+
+  // Add header row
+  irrelevantRows.push(['Irrelevant Keywords']);
+
+  // Add irrelevant keywords as single column
+  if (campaign.irrelevantKeywords && campaign.irrelevantKeywords.length > 0) {
+    campaign.irrelevantKeywords.forEach((keyword) => {
+      irrelevantRows.push([keyword]);
+    });
+  }
+
+  const irrelevantSheet = XLSX.utils.aoa_to_sheet(irrelevantRows);
+  XLSX.utils.book_append_sheet(workbook, irrelevantSheet, 'Irrelevant Keywords');
 
   // Generate buffer
   const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
   return buffer;
 }
-
-
-
