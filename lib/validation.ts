@@ -50,3 +50,5 @@ export function validateLandingPages(urls: string[]): string[] {
   return valid.slice(0, 10); // Max 10 URLs
 }
 
+
+
