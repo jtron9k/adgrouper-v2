@@ -13,10 +13,40 @@ export async function getOpenAIModels(apiKey: string): Promise<string[]> {
 }
 
 export async function getGeminiModels(apiKey: string): Promise<string[]> {
-  // Gemini API doesn't have a models list endpoint, return common models
+  try {
+    // Try to fetch models from Google's API
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + apiKey);
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.models && Array.isArray(data.models)) {
+        // Filter for models that support generateContent and are not deprecated
+        const availableModels = data.models
+          .filter((model: any) => 
+            model.supportedGenerationMethods?.includes('generateContent') &&
+            !model.name.includes('embed') &&
+            !model.name.includes('embedding') &&
+            model.name.startsWith('models/')
+          )
+          .map((model: any) => model.name.replace('models/', ''))
+          .sort();
+        
+        if (availableModels.length > 0) {
+          return availableModels;
+        }
+      }
+    }
+  } catch (error) {
+    // If API call fails, fall back to hardcoded list
+    console.warn('Failed to fetch Gemini models from API, using hardcoded list:', error);
+  }
+  
+  // Fallback to latest known models (gemini-pro and gemini-pro-vision are deprecated)
+  // Order: newest first
   return [
-    'gemini-pro',
-    'gemini-pro-vision',
+    'gemini-2.0-flash-exp',
+    'gemini-1.5-pro-latest',
+    'gemini-1.5-flash-latest',
     'gemini-1.5-pro',
     'gemini-1.5-flash',
   ];
