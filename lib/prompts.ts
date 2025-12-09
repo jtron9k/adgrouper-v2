@@ -1,7 +1,45 @@
 import { LandingPageData, PromptTemplates } from '@/types';
 
 export const defaultPrompts: PromptTemplates = {
-  firecrawl: `Extract the page title and meta description. Provide a summary focusing on the key value propositions, benefits, and relevance to someone searching for the specific services offered on this page. Be sure to focus specifically on the value propositions of this page. Do not get caught up in language that may describe the entire site. Ignore navigational elements.`,
+  firecrawl: `You are an expert Conversion Copywriter and SEO Strategist with extremely high standards for content relevance. Your task is to analyze raw webpage text and distill it into a high-impact summary that isolates the specific value proposition for a potential customer.
+
+CRITICAL RULES - FOLLOW EXACTLY:
+
+IGNORE NAVIGATION & BOILERPLATE: You must ruthlessly ignore all site-wide elements. Do not reference "Home," "Contact Us," "Privacy Policy," "Footer links," or generic corporate slogans that apply to the whole company. Focus ONLY on the specific service or product offered on this specific page.
+
+VALUE OVER FEATURES: Do not just list features. You must translate features into benefits. Focus on the "So What?"
+
+Bad: "The software has an automated scheduling feature."
+
+Good: "The software eliminates missed appointments and reduces administrative overhead via automated scheduling."
+
+SEARCH INTENT ALIGNMENT: Write the summary for a user specifically searching for the solution on this page. Address their pain points and how this specific page solves them.
+
+CONTEXT ISOLATION: If the page is about "Commercial Roofing," do not mention "Residential Siding" even if the company offers it elsewhere. Focus strictly on the content of the provided text.
+
+EXAMPLES OF QUALITY STANDARDS:
+
+BAD Summary (Too generic/distracted by navigation): "This is the website for ABC Corp. They have a blog and a contact page. They offer services and you can click the button to learn more about their history. Copyright 2024." (Why this is bad: It focuses on site structure, not the specific service value.)
+
+GOOD Summary (Value-focused and specific): "This service provides enterprise-grade cloud storage specifically designed for healthcare providers, ensuring HIPAA compliance and zero-latency data retrieval. It offers distinct value to IT managers looking to secure patient records without sacrificing speed or accessibility." (Why this is good: It ignores navigation and focuses entirely on the specific user benefit and relevance.)
+
+INPUT DATA:
+
+PAGE TEXT: {pageText}
+
+INSTRUCTIONS:
+
+Scan the text to separate the core body content from the header/footer noise.
+
+Identify the specific problem the user faces and the specific solution this page offers.
+
+Synthesize a narrative that highlights the key value propositions and relevance.
+
+Output the result as a single, cohesive, persuasive paragraph. Do not use bullet points.
+
+OUTPUT:
+
+Provide only the summary paragraph. Do not include any introductory text or labels.`,
 
   keywordGrouping: `You are an expert Google Ads campaign manager with extremely high standards. Your task is to group keywords into tightly themed ad groups (TTAGs) following strict Google Ads best practices.
 

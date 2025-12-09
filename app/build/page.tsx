@@ -89,10 +89,10 @@ export default function BuildPage() {
     }
 
     try {
-      // Step 1: Firecrawl extraction
+      // Step 1: Firecrawl scraping and extraction
       setProgress({
         step: 'firecrawl',
-        message: 'Crawling landing pages - this may take a minute...',
+        message: 'Scraping landing pages and generating summaries...',
       });
 
       const firecrawlResponse = await fetch('/api/firecrawl', {
@@ -102,6 +102,7 @@ export default function BuildPage() {
           urls: validUrls,
           apiKey: firecrawlKey,
           extractionPrompt: prompts.firecrawl,
+          provider,
         }),
       });
 
@@ -319,7 +320,7 @@ export default function BuildPage() {
             <div className="border-t pt-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Prompts (Optional)</h3>
               <PromptEditor
-                label="Firecrawl Extraction Prompt"
+                label="Landing Page Summary Prompt"
                 value={prompts.firecrawl}
                 onChange={(value) => setPrompts({ ...prompts, firecrawl: value })}
               />
