@@ -85,7 +85,7 @@ KEYWORDS IN THIS ADGROUP: {keywords}
 LANDING PAGE DATA:
 {landingPageData}
 
-Create 2 headlines (max 30 characters each) and 3 descriptions (max 90 characters each) that:
+Create 6 headlines (max 30 characters each) and 3 descriptions (max 90 characters each) that:
 1. Incorporate the primary keywords naturally
 2. Align with the landing page messaging and value propositions
 3. Include compelling CTAs
@@ -94,7 +94,7 @@ Create 2 headlines (max 30 characters each) and 3 descriptions (max 90 character
 
 Return your response as a JSON object:
 {
-  "headlines": ["headline1", "headline2"],
+  "headlines": ["headline1", "headline2", "headline3", "headline4", "headline5", "headline6"],
   "descriptions": ["description1", "description2", "description3"]
 }
 

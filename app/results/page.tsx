@@ -135,7 +135,7 @@ export default function ResultsPage() {
       const data = await response.json();
 
       const updatedAdgroups = [...campaign.adgroups];
-      updatedAdgroups[adgroupIndex].headlines = data.headlines || ['', ''];
+      updatedAdgroups[adgroupIndex].headlines = data.headlines || ['', '', '', '', '', ''];
       updatedAdgroups[adgroupIndex].descriptions = data.descriptions || ['', '', ''];
 
       setCampaign({

@@ -48,14 +48,14 @@ export async function POST(request: NextRequest) {
     // Ensure character limits
     const headlines = (parsed.headlines || [])
       .map((h: string) => h.slice(0, 30))
-      .slice(0, 2);
+      .slice(0, 6);
     
     const descriptions = (parsed.descriptions || [])
       .map((d: string) => d.slice(0, 90))
       .slice(0, 3);
 
     // Pad arrays if needed
-    while (headlines.length < 2) headlines.push('');
+    while (headlines.length < 6) headlines.push('');
     while (descriptions.length < 3) descriptions.push('');
 
     return NextResponse.json({
@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 
 
 

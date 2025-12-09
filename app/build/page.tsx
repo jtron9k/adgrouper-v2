@@ -163,7 +163,7 @@ export default function BuildPage() {
             console.error(`Failed to generate ads for ${adgroup.name}:`, errorData);
             return {
               ...adgroup,
-              headlines: ['', ''],
+              headlines: ['', '', '', '', '', ''],
               descriptions: ['', '', ''],
             };
           }
@@ -171,7 +171,7 @@ export default function BuildPage() {
           const adsData = await adsResponse.json();
           return {
             ...adgroup,
-            headlines: adsData.headlines || ['', ''],
+            headlines: adsData.headlines || ['', '', '', '', '', ''],
             descriptions: adsData.descriptions || ['', '', ''],
           };
         })
