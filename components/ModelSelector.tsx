@@ -132,34 +132,34 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             Google Ads Campaign Builder
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Select your AI provider and configure API keys
           </p>
-          <p className="mt-2 text-center text-xs text-red-600">
+          <p className="mt-2 text-center text-xs text-red-600 dark:text-red-400">
             API keys are only stored locally in your browser. Save your keys in a safe spot in case you need them again.
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
             {error}
           </div>
         )}
 
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               AI Provider
             </label>
             <div className="space-y-2">
               {(['openai', 'gemini', 'claude'] as const).map((p) => (
-                <label key={p} className="flex items-center">
+                <label key={p} className="flex items-center text-gray-900 dark:text-gray-100">
                   <input
                     type="radio"
                     name="provider"
@@ -175,21 +175,21 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {provider === 'openai' ? 'OpenAI' : provider === 'gemini' ? 'Google' : 'Anthropic'} API Key
             </label>
             <input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your API key"
             />
             <a
               href={API_KEY_LINKS[provider]}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 inline-block"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline mt-1 inline-block"
             >
               Don't have an API key? Get one here →
             </a>
@@ -197,7 +197,7 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
               <button
                 onClick={fetchModels}
                 disabled={loading || !apiKey}
-                className="mt-2 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+                className="mt-2 w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600"
               >
                 {loading ? 'Loading...' : 'Fetch Models'}
               </button>
@@ -206,13 +206,13 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
 
           {models.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Model
               </label>
               <select
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
                 {models.map((model) => (
                   <option key={model} value={model}>
@@ -224,21 +224,21 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Firecrawl API Key
             </label>
             <input
               type="password"
               value={firecrawlKey}
               onChange={(e) => setFirecrawlKey(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your Firecrawl API key"
             />
             <a
               href="https://docs.firecrawl.dev/introduction"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 inline-block"
+              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline mt-1 inline-block"
             >
               Get your Firecrawl API key here →
             </a>
@@ -247,7 +247,7 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
           <button
             onClick={handleSubmit}
             disabled={!apiKey || !firecrawlKey || !selectedModel}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400"
+            className="w-full bg-green-600 dark:bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-700 dark:hover:bg-green-600 disabled:bg-gray-400 dark:disabled:bg-gray-600"
           >
             Continue
           </button>

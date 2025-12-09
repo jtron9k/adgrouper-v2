@@ -204,17 +204,17 @@ export default function ResultsPage() {
   };
 
   if (!campaign) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{campaign.name}</h1>
-            <p className="text-sm text-gray-600 mt-1">{campaign.goal}</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{campaign.name}</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{campaign.goal}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
               Provider: {campaign.provider.name} | Model: {campaign.provider.model}
             </p>
           </div>
@@ -223,7 +223,7 @@ export default function ResultsPage() {
               sessionStorage.clear();
               router.push('/');
             }}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md"
+            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md"
           >
             Start Over
           </button>
@@ -246,8 +246,8 @@ export default function ResultsPage() {
         </div>
 
         {campaign.irrelevantKeywords && campaign.irrelevantKeywords.length > 0 && (
-          <div className="bg-white border border-gray-300 rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Irrelevant Keywords</h2>
+          <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Irrelevant Keywords</h2>
             <KeywordList
               keywords={campaign.irrelevantKeywords.map(k => ({ text: k, removed: false }))}
               onRemove={handleRemoveIrrelevantKeyword}
@@ -258,7 +258,7 @@ export default function ResultsPage() {
         <div className="flex justify-center">
           <button
             onClick={handleExport}
-            className="bg-green-600 text-white py-3 px-8 rounded-md hover:bg-green-700 font-medium"
+            className="bg-green-600 dark:bg-green-700 text-white py-3 px-8 rounded-md hover:bg-green-700 dark:hover:bg-green-600 font-medium"
           >
             Export to Excel
           </button>

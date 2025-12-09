@@ -33,24 +33,24 @@ export default function FirecrawlResults({ landingPageData }: FirecrawlResultsPr
   if (landingPageData.length === 0) return null;
 
   return (
-    <div className="border border-gray-300 rounded-md mb-4">
+    <div className="border border-gray-300 dark:border-gray-700 rounded-md mb-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-2 bg-gray-50 hover:bg-gray-100 flex items-center justify-between text-left"
+        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center justify-between text-left"
       >
-        <span className="font-medium text-gray-700">Landing Page Analysis</span>
-        <span className="text-gray-500">{isExpanded ? '▼' : '▶'}</span>
+        <span className="font-medium text-gray-700 dark:text-gray-300">Landing Page Analysis</span>
+        <span className="text-gray-500 dark:text-gray-400">{isExpanded ? '▼' : '▶'}</span>
       </button>
       {isExpanded && (
         <div className="p-4 space-y-4">
           {landingPageData.map((data, index) => (
-            <div key={index} className="border-b border-gray-200 pb-4 last:border-b-0">
-              <h4 className="font-semibold text-sm text-gray-900 mb-2">
+            <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
+              <h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-2">
                 <a
                   href={data.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline break-all"
+                  className="text-blue-600 dark:text-blue-400 hover:underline break-all"
                 >
                   {data.url}
                   <ExternalLinkIcon />
@@ -58,16 +58,16 @@ export default function FirecrawlResults({ landingPageData }: FirecrawlResultsPr
               </h4>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">Title: </span>
-                  <span className="text-gray-600">{data.title}</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Title: </span>
+                  <span className="text-gray-600 dark:text-gray-400">{data.title}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Meta Description: </span>
-                  <span className="text-gray-600">{data.metaDescription}</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Meta Description: </span>
+                  <span className="text-gray-600 dark:text-gray-400">{data.metaDescription}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Summary: </span>
-                  <span className="text-gray-600">{data.summary}</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Summary: </span>
+                  <span className="text-gray-600 dark:text-gray-400">{data.summary}</span>
                 </div>
               </div>
             </div>

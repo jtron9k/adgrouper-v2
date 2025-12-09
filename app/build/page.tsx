@@ -200,79 +200,79 @@ export default function BuildPage() {
   };
 
   if (!provider) {
-    return <div>Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <ProgressIndicator progress={progress} />
       
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Build Your Campaign</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Build Your Campaign</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Provider: {provider.name} | Model: {provider.model}
               </p>
             </div>
             <button
               onClick={() => router.push('/')}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md"
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-md"
             >
               Go Back
             </button>
           </div>
 
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
               {error}
             </div>
           )}
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Campaign Name *
               </label>
               <input
                 type="text"
                 value={campaignName}
                 onChange={(e) => setCampaignName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., Summer Shoe Sale 2025"
                 disabled={progress.step !== 'idle'}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Campaign Goal *
               </label>
               <input
                 type="text"
                 value={campaignGoal}
                 onChange={(e) => setCampaignGoal(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., Drive sales of our summer shoe lineup for women age 25-44"
                 disabled={progress.step !== 'idle'}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Landing Page URLs (max 10) *
               </label>
               <textarea
                 value={urlsText}
                 onChange={(e) => setUrlsText(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter URLs, one per line (must start with http:// or https://)"
                 disabled={progress.step !== 'idle'}
               />
               <div className="mt-2">
-                <label className="text-sm text-gray-600">
+                <label className="text-sm text-gray-600 dark:text-gray-400">
                   Or upload CSV: 
                   <input
                     type="file"
@@ -289,19 +289,19 @@ export default function BuildPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Keywords (max 200) *
               </label>
               <textarea
                 value={keywordsText}
                 onChange={(e) => setKeywordsText(e.target.value)}
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter keywords, one per line"
                 disabled={progress.step !== 'idle'}
               />
               <div className="mt-2">
-                <label className="text-sm text-gray-600">
+                <label className="text-sm text-gray-600 dark:text-gray-400">
                   Or upload CSV: 
                   <input
                     type="file"
@@ -317,8 +317,8 @@ export default function BuildPage() {
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Prompts (Optional)</h3>
+            <div className="border-t border-gray-300 dark:border-gray-700 pt-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Edit Prompts (Optional)</h3>
               <PromptEditor
                 label="Landing Page Summary Prompt"
                 value={prompts.firecrawl}
@@ -344,7 +344,7 @@ export default function BuildPage() {
             <button
               onClick={handleSubmit}
               disabled={progress.step !== 'idle'}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 font-medium"
+              className="w-full bg-blue-600 dark:bg-blue-700 text-white py-3 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 font-medium"
             >
               {progress.step !== 'idle' ? 'Processing...' : 'Submit'}
             </button>

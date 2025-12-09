@@ -30,11 +30,11 @@ export default function AdgroupCard({
   const activeKeywords = adgroup.keywords.filter(k => !k.removed);
 
   return (
-    <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{adgroup.name}</h3>
+    <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{adgroup.name}</h3>
 
       <div className="mb-4">
-        <h4 className="font-medium text-sm text-gray-700 mb-2">Keywords</h4>
+        <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Keywords</h4>
         <KeywordList
           keywords={activeKeywords}
           onRemove={(displayIndex) => {
@@ -58,7 +58,7 @@ export default function AdgroupCard({
         <button
           onClick={onGenerateMoreKeywords}
           disabled={loadingKeywords}
-          className="mt-2 text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+          className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:text-gray-400 dark:disabled:text-gray-600"
         >
           {loadingKeywords ? 'Generating...' : '+ Generate More Keywords'}
         </button>
@@ -68,11 +68,11 @@ export default function AdgroupCard({
 
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="font-medium text-sm text-gray-700">Ad Copy</h4>
+          <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Ad Copy</h4>
           <button
             onClick={onRegenerateAds}
             disabled={loadingAds}
-            className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:text-gray-400 dark:disabled:text-gray-600"
           >
             {loadingAds ? 'Regenerating...' : 'Regenerate Ads'}
           </button>
