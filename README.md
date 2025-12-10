@@ -28,11 +28,12 @@ An AI-powered web application that helps users create high-performing Google Ads
 ### Prerequisites
 
 - Node.js 18+ and npm/yarn
+- Supabase account (for authentication and data storage)
 - API keys for:
   - One of: OpenAI, Google Gemini, or Anthropic Claude
   - Firecrawl.dev
 
-### Setup
+### Local Setup
 
 1. Clone the repository:
 ```bash
@@ -47,14 +48,33 @@ npm install
 yarn install
 ```
 
-3. Run the development server:
+3. Create a `.env.local` file with your Supabase credentials:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+4. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Railway Deployment
+
+See [RAILWAY.md](./RAILWAY.md) for detailed Railway deployment instructions.
+
+**Quick Setup:**
+1. Connect your GitHub repository to Railway
+2. Add these environment variables in Railway:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. Deploy!
+
+**Important:** The app will fail with a 500 error if Supabase environment variables are not set.
 
 ## Usage Guide
 
