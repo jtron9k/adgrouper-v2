@@ -1,27 +1,76 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Campaign, Adgroup, Keyword } from '@/types';
 import AdgroupCard from '@/components/AdgroupCard';
 import KeywordList from '@/components/KeywordList';
 import { getLastUpdated } from '@/lib/version';
+import { createClient } from '@/lib/supabase';
 
 export default function ResultsPage() {
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loadingKeywords, setLoadingKeywords] = useState<Record<string, boolean>>({});
   const [loadingAds, setLoadingAds] = useState<Record<string, boolean>>({});
+  const [runId, setRunId] = useState<string | null>(null);
+  const hasSavedResults = useRef(false);
 
   useEffect(() => {
-    const savedData = sessionStorage.getItem('campaignData');
-    if (!savedData) {
-      router.push('/');
-      return;
-    }
+    const checkAuthAndLoad = async () => {
+      // Check authentication first
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push('/login');
+        return;
+      }
 
-    setCampaign(JSON.parse(savedData));
+      const savedData = sessionStorage.getItem('campaignData');
+      if (!savedData) {
+        router.push('/');
+        return;
+      }
+
+      const parsedCampaign = JSON.parse(savedData);
+      setCampaign(parsedCampaign);
+
+      // Get run ID from session storage
+      const savedRunId = sessionStorage.getItem('currentRunId');
+      if (savedRunId) {
+        setRunId(savedRunId);
+      }
+
+      // Save results snapshot if we have a run ID and haven't saved yet
+      if (savedRunId && !hasSavedResults.current) {
+        hasSavedResults.current = true;
+        saveResultsSnapshot(savedRunId, parsedCampaign);
+      }
+    };
+
+    checkAuthAndLoad();
   }, [router]);
+
+  const saveResultsSnapshot = async (id: string, campaignData: Campaign) => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return;
+
+    try {
+      await fetch(`/api/runs/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stage: 'results',
+          data: campaignData,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save results snapshot:', error);
+    }
+  };
 
   const handleRemoveKeyword = (adgroupIndex: number, keywordIndex: number) => {
     if (!campaign) return;

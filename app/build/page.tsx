@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AIProvider, ProgressState, PromptTemplates, LandingPageData } from '@/types';
+import { AIProvider, ProgressState, PromptTemplates, LandingPageData, Campaign } from '@/types';
 import PromptEditor from '@/components/PromptEditor';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import { defaultPrompts } from '@/lib/prompts';
 import { validateUrls, validateKeywords, parseCsv } from '@/lib/validation';
 import { getLastUpdated } from '@/lib/version';
+import { createClient } from '@/lib/supabase';
 
 export default function BuildPage() {
   const router = useRouter();
@@ -22,16 +23,46 @@ export default function BuildPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const savedProvider = sessionStorage.getItem('provider');
-    const savedFirecrawlKey = sessionStorage.getItem('firecrawlKey');
+    const checkAuthAndLoad = async () => {
+      // Check authentication first
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push('/login');
+        return;
+      }
 
-    if (!savedProvider || !savedFirecrawlKey) {
-      router.push('/');
-      return;
-    }
+      const savedProvider = sessionStorage.getItem('provider');
+      const savedFirecrawlKey = sessionStorage.getItem('firecrawlKey');
 
-    setProvider(JSON.parse(savedProvider));
-    setFirecrawlKey(savedFirecrawlKey);
+      if (!savedProvider || !savedFirecrawlKey) {
+        router.push('/');
+        return;
+      }
+
+      setProvider(JSON.parse(savedProvider));
+      setFirecrawlKey(savedFirecrawlKey);
+
+      // Check if we're restoring from history
+      const savedCampaignData = sessionStorage.getItem('campaignData');
+      if (savedCampaignData) {
+        try {
+          const campaignData: Campaign = JSON.parse(savedCampaignData);
+          setCampaignName(campaignData.name || '');
+          setCampaignGoal(campaignData.goal || '');
+          setUrlsText(campaignData.landingPageUrls?.join('\n') || '');
+          setKeywordsText(campaignData.keywords?.join('\n') || '');
+          if (campaignData.prompts) {
+            setPrompts(campaignData.prompts);
+          }
+        } catch (error) {
+          console.error('Failed to restore campaign data:', error);
+        }
+      }
+    };
+
+    checkAuthAndLoad();
   }, [router]);
 
   const handleFileUpload = (type: 'urls' | 'keywords', file: File) => {
@@ -180,10 +211,10 @@ export default function BuildPage() {
       );
 
       // Store results and navigate
-      const campaignData = {
+      const campaignData: Campaign = {
         name: campaignName,
         goal: campaignGoal,
-        provider,
+        provider: provider!,
         firecrawlConfig: { apiKey: firecrawlKey },
         landingPageUrls: validUrls,
         keywords: validKeywords,
@@ -193,6 +224,35 @@ export default function BuildPage() {
       };
 
       sessionStorage.setItem('campaignData', JSON.stringify(campaignData));
+
+      // Save run to database if user is logged in
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        try {
+          const runResponse = await fetch('/api/runs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              campaignName,
+              campaignGoal,
+              stage: 'submitted',
+              data: campaignData,
+            }),
+          });
+
+          if (runResponse.ok) {
+            const { run } = await runResponse.json();
+            // Store run ID for results page to update
+            sessionStorage.setItem('currentRunId', run.id);
+          }
+        } catch (saveError) {
+          // Don't block navigation if save fails
+          console.error('Failed to save run:', saveError);
+        }
+      }
+
       router.push('/results');
     } catch (err: any) {
       setError(err.message || 'An error occurred');

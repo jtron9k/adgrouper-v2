@@ -56,3 +56,22 @@ export interface ProgressState {
   total?: number;
 }
 
+// Run history types
+export interface Run {
+  id: string;
+  user_id: string;
+  campaign_name: string;
+  campaign_goal: string | null;
+  stage: 'submitted' | 'results';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Snapshot {
+  id: string;
+  run_id: string;
+  stage: string;
+  data: Campaign;
+  created_at: string;
+}
+

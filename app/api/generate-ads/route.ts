@@ -39,8 +39,9 @@ export async function POST(request: NextRequest) {
         throw new Error('No JSON object found in response');
       }
     } catch (parseError) {
+      // Don't expose LLM response in error message for security
       return NextResponse.json(
-        { error: 'Failed to parse ad copy response. LLM response: ' + response },
+        { error: 'Failed to parse ad copy response. Please try again.' },
         { status: 500 }
       );
     }

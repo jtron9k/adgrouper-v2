@@ -105,10 +105,10 @@ export async function extractLandingPage(
   apiKey: string,
   extractionPrompt: string
 ): Promise<LandingPageData> {
+  // Removed API key logging for security
   console.log('[Firecrawl] === Starting extraction for single URL ===');
   console.log('[Firecrawl] URL:', url);
   console.log('[Firecrawl] Prompt:', extractionPrompt);
-  console.log('[Firecrawl] API Key (first 10 chars):', apiKey.substring(0, 10) + '...');
 
   const requestBody = {
     urls: [url],
@@ -174,7 +174,7 @@ export async function scrapeAndExtractLandingPage(
   console.log('[Firecrawl] URL:', url);
   console.log('[Firecrawl] Prompt:', extractionPrompt);
   console.log('[Firecrawl] Provider:', provider.name, provider.model);
-  console.log('[Firecrawl] API Key (first 10 chars):', apiKey.substring(0, 10) + '...');
+  // Removed API key logging for security
 
   // Step 1: Scrape the page using Firecrawl scrape endpoint
   const scrapeRequestBody = {
