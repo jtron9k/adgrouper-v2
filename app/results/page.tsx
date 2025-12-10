@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Campaign, Adgroup, Keyword } from '@/types';
 import AdgroupCard from '@/components/AdgroupCard';
 import KeywordList from '@/components/KeywordList';
+import { getLastUpdated } from '@/lib/version';
 
 export default function ResultsPage() {
   const router = useRouter();
@@ -216,6 +217,9 @@ export default function ResultsPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{campaign.goal}</p>
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
               Provider: {campaign.provider.name} | Model: {campaign.provider.model}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              Last updated {getLastUpdated()}
             </p>
           </div>
           <button

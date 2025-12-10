@@ -7,6 +7,7 @@ import PromptEditor from '@/components/PromptEditor';
 import ProgressIndicator from '@/components/ProgressIndicator';
 import { defaultPrompts } from '@/lib/prompts';
 import { validateUrls, validateKeywords, parseCsv } from '@/lib/validation';
+import { getLastUpdated } from '@/lib/version';
 
 export default function BuildPage() {
   const router = useRouter();
@@ -214,6 +215,9 @@ export default function BuildPage() {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Build Your Campaign</h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Provider: {provider.name} | Model: {provider.model}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                Last updated {getLastUpdated()}
               </p>
             </div>
             <button

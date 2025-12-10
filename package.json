@@ -4,10 +4,11 @@
   "description": "AI-powered Google Ads campaign builder with keyword grouping and ad copy generation",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/get-version.js && next dev",
+    "build": "node scripts/get-version.js && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "version": "node scripts/get-version.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.0",
