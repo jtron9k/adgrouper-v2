@@ -6,7 +6,10 @@ export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
     const cookieStore = await cookies();
-    const origin = request.headers.get('origin') || '';
+    
+    // Get the correct redirect URL - use environment variable if set, otherwise use request origin
+    const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || '';
+    const emailRedirectTo = redirectUrl ? `${redirectUrl}/api/auth/callback` : undefined;
 
     // Validate email format
     if (!email || typeof email !== 'string' || !email.includes('@')) {
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase.auth.signInWithOtp({
       email: normalizedEmail,
       options: {
-        emailRedirectTo: `${origin}/api/auth/callback`,
+        emailRedirectTo,
       },
     });
 

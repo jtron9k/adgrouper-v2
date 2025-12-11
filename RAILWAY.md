@@ -7,7 +7,21 @@ You **must** set these environment variables in Railway for the app to work:
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+NEXT_PUBLIC_APP_URL=https://your-app.railway.app
 ```
+
+**Important:** `NEXT_PUBLIC_APP_URL` should be your Railway app URL (e.g., `https://your-app.railway.app`) so magic links redirect correctly.
+
+### Configure Redirect URL in Supabase
+
+You also need to add your Railway URL to Supabase's allowed redirect URLs:
+
+1. Go to your Supabase dashboard
+2. Navigate to Authentication > URL Configuration
+3. Add your Railway URL to "Redirect URLs":
+   - `https://your-app.railway.app/api/auth/callback`
+   - Also add `http://localhost:3000/api/auth/callback` for local development
+4. Save the changes
 
 ### How to Set Environment Variables in Railway
 
