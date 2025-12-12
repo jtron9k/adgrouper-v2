@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase';
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
@@ -32,25 +32,25 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setMessage('');
 
     try {
-      // Use signin endpoint (both signup and signin use magic links now)
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to send magic link');
+        throw new Error(data.error || 'Failed to sign in');
       }
 
-      setMessage('Check your email for the magic link!');
+      // Redirect on success
+      router.push('/');
+      router.refresh();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -72,19 +72,13 @@ export default function LoginPage() {
             Sign In
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Enter your email address to receive a magic link
+            Enter your email and password to sign in
           </p>
         </div>
 
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
             {error}
-          </div>
-        )}
-
-        {message && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded">
-            {message}
           </div>
         )}
 
@@ -101,19 +95,37 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={loading || !!message}
+              disabled={loading}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <div>
             <button
               type="submit"
-              disabled={loading || !!message}
+              disabled={loading}
               className="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 font-medium"
             >
-              {loading ? 'Sending...' : message ? 'Magic Link Sent' : 'Send Magic Link'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </div>
         </form>

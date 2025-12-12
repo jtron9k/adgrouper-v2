@@ -4,17 +4,20 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
+    const { email, password } = await request.json();
     const cookieStore = await cookies();
-    
-    // Get the correct redirect URL - use environment variable if set, otherwise use request origin
-    const redirectUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || '';
-    const emailRedirectTo = redirectUrl ? `${redirectUrl}/api/auth/callback` : undefined;
 
-    // Validate email format
+    // Validate inputs
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json(
         { error: 'Invalid email address' },
+        { status: 400 }
+      );
+    }
+
+    if (!password || typeof password !== 'string' || password.length === 0) {
+      return NextResponse.json(
+        { error: 'Password is required' },
         { status: 400 }
       );
     }
@@ -50,30 +53,31 @@ export async function POST(request: NextRequest) {
     // This prevents information leakage about whether email exists in table
     if (emailError || !approvedEmail) {
       return NextResponse.json(
-        { error: 'Sign-in is not available for this email address' },
-        { status: 403 }
+        { error: 'Invalid email or password' },
+        { status: 401 }
       );
     }
 
-    // Send magic link
-    const { error } = await supabase.auth.signInWithOtp({
+    // Sign in with email and password
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email: normalizedEmail,
-      options: {
-        emailRedirectTo,
-      },
+      password,
     });
 
     // Use generic error messages for auth errors to avoid information leakage
-    if (error) {
+    if (authError || !data.user) {
       return NextResponse.json(
-        { error: 'Unable to send magic link. Please try again later.' },
-        { status: 400 }
+        { error: 'Invalid email or password' },
+        { status: 401 }
       );
     }
 
-    // Always return success message (even if email doesn't exist) to prevent enumeration
     return NextResponse.json({ 
-      message: 'Check your email for the magic link'
+      message: 'Signed in successfully',
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+      }
     });
   } catch (error: any) {
     // Catch any unexpected errors and return generic message
