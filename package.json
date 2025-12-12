@@ -1,7 +1,7 @@
 {
   "name": "google-ads-campaign-builder",
   "version": "1.0.0",
-  "description": "AI-powered Google Ads campaign builder with keyword grouping and ad copy generation",
+  "description": "AI-powered Search Ads campaign builder with keyword grouping and ad copy generation",
   "private": true,
   "scripts": {
     "dev": "node scripts/get-version.js && next dev",

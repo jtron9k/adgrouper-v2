@@ -1,4 +1,4 @@
-# Google Ads Campaign Builder
+# Search Ads Campaign Builder
 
 An AI-powered web application that helps users create high-performing Google Ads campaigns by automatically crawling landing pages, grouping keywords into tightly themed ad groups, generating ad copy, and exporting results to Excel.
 

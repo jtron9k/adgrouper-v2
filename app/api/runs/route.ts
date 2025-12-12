@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { Campaign } from '@/types';
 
-// GET /api/runs - List all runs for the current user
+// GET /api/runs - List all runs from all users
 export async function GET() {
   try {
     const supabase = await createServerSupabaseClient();
@@ -13,6 +13,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Fetch all runs with snapshots (no user_id filter)
+    // Note: RLS policies may need to be updated to allow all authenticated users to see all runs
     const { data: runs, error } = await supabase
       .from('runs')
       .select(`
@@ -29,7 +31,8 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ runs });
+    // user_email is now stored in the table, return runs directly
+    return NextResponse.json({ runs: runs || [] });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -59,6 +62,7 @@ export async function POST(request: NextRequest) {
       .from('runs')
       .insert({
         user_id: user.id,
+        user_email: user.email,
         campaign_name: campaignName,
         campaign_goal: campaignGoal,
         stage,

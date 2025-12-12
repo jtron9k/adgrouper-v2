@@ -66,7 +66,7 @@ export default function NavBar() {
               href="/" 
               className="text-lg font-semibold text-gray-900 dark:text-gray-100"
             >
-              Ad Campaign Builder
+              Search Ads Campaign Builder
             </Link>
             <div className="flex space-x-4">
               <Link

@@ -89,8 +89,27 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
       const data = await response.json();
       setModels(data.models);
       
-      if (data.models.length > 0 && !selectedModel) {
-        setSelectedModel(data.models[0]);
+      if (data.models.length > 0) {
+        // Set default models based on provider
+        let defaultModel = data.models[0]; // Fallback to first model
+        
+        if (targetProvider === 'gemini') {
+          // Default to gemini-pro-latest if available
+          const geminiDefault = data.models.find((m: string) => m === 'gemini-pro-latest');
+          if (geminiDefault) {
+            defaultModel = geminiDefault;
+          }
+        } else if (targetProvider === 'openai') {
+          // Default to gpt-5.1 if available
+          const openaiDefault = data.models.find((m: string) => m === 'gpt-5.1');
+          if (openaiDefault) {
+            defaultModel = openaiDefault;
+          }
+        }
+        
+        // Always set the default when fetching models (user can change it)
+        // This ensures defaults are set when switching providers
+        setSelectedModel(defaultModel);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to fetch models');
@@ -128,7 +147,7 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
             Last updated {getLastUpdated()}
           </p>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
-            Google Ads Campaign Builder
+            Search Ads Campaign Builder
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Select your AI provider and model

@@ -183,7 +183,7 @@ export default function HistoryPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Campaign History</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            View and restore your previous campaign runs
+            View and restore all campaign runs from all users
           </p>
         </div>
 
@@ -196,7 +196,7 @@ export default function HistoryPage() {
         {runs.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-600 dark:text-gray-400">
-              No campaign runs yet. Start building a campaign to see your history here.
+              No campaign runs yet. Start building a campaign to see history here.
             </p>
             <button
               onClick={() => router.push('/')}
@@ -234,6 +234,11 @@ export default function HistoryPage() {
                         </p>
                       )}
                       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
+                        {run.user_email && (
+                          <span className="font-medium text-gray-700 dark:text-gray-300">
+                            {run.user_email}
+                          </span>
+                        )}
                         <span>Created: {formatDate(run.created_at)}</span>
                         {run.updated_at !== run.created_at && (
                           <span>Updated: {formatDate(run.updated_at)}</span>

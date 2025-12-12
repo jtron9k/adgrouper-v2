@@ -60,6 +60,7 @@ export interface ProgressState {
 export interface Run {
   id: string;
   user_id: string;
+  user_email?: string; // Optional user email for display
   campaign_name: string;
   campaign_goal: string | null;
   stage: 'submitted' | 'results';
