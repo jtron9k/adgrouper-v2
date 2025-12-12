@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIModels, getGeminiModels, getClaudeModels } from '@/lib/providers';
+import { getApiKey } from '@/lib/api-keys';
 
 export async function POST(request: NextRequest) {
   try {
-    const { provider, apiKey } = await request.json();
+    const { provider } = await request.json();
 
-    if (!provider || !apiKey) {
+    if (!provider) {
       return NextResponse.json(
-        { error: 'Provider and API key are required' },
+        { error: 'Provider is required' },
         { status: 400 }
       );
     }
@@ -16,10 +17,12 @@ export async function POST(request: NextRequest) {
 
     switch (provider) {
       case 'openai':
-        models = await getOpenAIModels(apiKey);
+        const openaiKey = await getApiKey('openai');
+        models = await getOpenAIModels(openaiKey);
         break;
       case 'gemini':
-        models = await getGeminiModels(apiKey);
+        const geminiKey = await getApiKey('gemini');
+        models = await getGeminiModels(geminiKey);
         break;
       case 'claude':
         models = getClaudeModels();

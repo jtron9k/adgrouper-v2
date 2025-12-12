@@ -1,0 +1,56 @@
+import { createServerSupabaseClient } from './supabase-server';
+
+export type ApiKeyType = 'firecrawl' | 'openai' | 'gemini' | 'claude';
+
+/**
+ * Fetches an API key from Supabase by key type.
+ * This function should only be called server-side.
+ */
+export async function getApiKey(keyType: ApiKeyType): Promise<string> {
+  const supabase = await createServerSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from('api_keys')
+    .select('api_key')
+    .eq('key_type', keyType)
+    .single();
+
+  if (error || !data) {
+    throw new Error(`Failed to fetch ${keyType} API key: ${error?.message || 'Key not found'}`);
+  }
+
+  return data.api_key;
+}
+
+/**
+ * Fetches all API keys from Supabase.
+ * Returns an object with all key types.
+ */
+export async function getAllApiKeys(): Promise<{
+  firecrawl: string;
+  openai: string;
+  gemini: string;
+  claude: string;
+}> {
+  const supabase = await createServerSupabaseClient();
+  
+  const { data, error } = await supabase
+    .from('api_keys')
+    .select('key_type, api_key');
+
+  if (error || !data) {
+    throw new Error(`Failed to fetch API keys: ${error?.message || 'Keys not found'}`);
+  }
+
+  const keys: Record<string, string> = {};
+  data.forEach((row) => {
+    keys[row.key_type] = row.api_key;
+  });
+
+  return {
+    firecrawl: keys.firecrawl || '',
+    openai: keys.openai || '',
+    gemini: keys.gemini || '',
+    claude: keys.claude || '',
+  };
+}

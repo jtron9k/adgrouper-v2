@@ -26,10 +26,9 @@ export default function Home() {
     checkAuth();
   }, [router]);
 
-  const handleSelect = (provider: AIProvider, firecrawlKey: string) => {
-    // Store in sessionStorage for use in build page
+  const handleSelect = (provider: AIProvider) => {
+    // Store in sessionStorage for use in build page (no API keys)
     sessionStorage.setItem('provider', JSON.stringify(provider));
-    sessionStorage.setItem('firecrawlKey', firecrawlKey);
   };
 
   if (loading) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { callLLM } from '@/lib/providers';
 import { formatPrompt, formatLandingPagesForPrompt, defaultPrompts } from '@/lib/prompts';
 import { AIProvider, LandingPageData } from '@/types';
+import { getApiKey } from '@/lib/api-keys';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,12 +14,22 @@ export async function POST(request: NextRequest) {
       provider,
     } = await request.json();
 
-    if (!adgroupData || !provider) {
+    if (!adgroupData || !provider || !provider.name || !provider.model) {
       return NextResponse.json(
-        { error: 'Adgroup data and provider are required' },
+        { error: 'Adgroup data and provider with name and model are required' },
         { status: 400 }
       );
     }
+
+    // Fetch API key from Supabase based on provider name
+    const apiKey = await getApiKey(provider.name as 'openai' | 'gemini' | 'claude');
+    
+    // Construct AIProvider with fetched key
+    const aiProvider: AIProvider = {
+      name: provider.name,
+      apiKey: apiKey,
+      model: provider.model,
+    };
 
     const prompt = formatPrompt(adCopyPrompt || defaultPrompts.adCopy, {
       campaignGoal: campaignGoal || '',
@@ -27,7 +38,7 @@ export async function POST(request: NextRequest) {
       landingPageData: formatLandingPagesForPrompt((landingPageData || []) as LandingPageData[]),
     });
 
-    const response = await callLLM(provider as AIProvider, prompt);
+    const response = await callLLM(aiProvider, prompt);
     
     // Parse JSON response
     let parsed;

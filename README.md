@@ -30,8 +30,10 @@ An AI-powered web application that helps users create high-performing Google Ads
 - Node.js 18+ and npm/yarn
 - Supabase account (for authentication and data storage)
 - API keys for:
-  - One of: OpenAI, Google Gemini, or Anthropic Claude
+  - One or more of: OpenAI, Google Gemini, or Anthropic Claude
   - Firecrawl.dev
+
+**Important:** API keys must be configured in your Supabase database. See the [API Key Configuration](#api-key-configuration) section below.
 
 ### Local Setup
 
@@ -54,14 +56,49 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-4. Run the development server:
+4. Configure API keys in Supabase (see [API Key Configuration](#api-key-configuration) section below)
+
+5. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### API Key Configuration
+
+API keys are stored securely in your Supabase database and are never exposed to the client. You must configure them before using the application.
+
+1. **Create the `api_keys` table** in your Supabase database:
+   - Go to your Supabase dashboard
+   - Navigate to SQL Editor
+   - Run the SQL script from `supabase_migration_api_keys.sql` (or create the table manually)
+
+2. **Add your API keys** to the `api_keys` table:
+   - Go to Table Editor → `api_keys`
+   - Insert rows with the following `key_type` values:
+     - `firecrawl` - Your Firecrawl.dev API key
+     - `openai` - Your OpenAI API key (optional, if using OpenAI)
+     - `gemini` - Your Google Gemini API key (optional, if using Gemini)
+     - `claude` - Your Anthropic Claude API key (optional, if using Claude)
+
+   Example SQL:
+   ```sql
+   INSERT INTO api_keys (key_type, api_key) VALUES
+     ('firecrawl', 'your-firecrawl-key-here'),
+     ('openai', 'your-openai-key-here'),
+     ('gemini', 'your-gemini-key-here'),
+     ('claude', 'your-claude-key-here')
+   ON CONFLICT (key_type) DO UPDATE SET api_key = EXCLUDED.api_key;
+   ```
+
+3. **Verify Row Level Security (RLS)** is enabled:
+   - The table should have RLS enabled
+   - Only authenticated users can read the keys (configured automatically by the migration script)
+
+**Note:** You only need to add keys for the providers you plan to use. At minimum, you need the `firecrawl` key.
 
 ### Railway Deployment
 
@@ -81,14 +118,12 @@ See [RAILWAY.md](./RAILWAY.md) for detailed Railway deployment instructions.
 ### Step 1: Select AI Provider and Model
 
 1. Choose your AI provider (OpenAI, Gemini, or Claude)
-2. Enter your provider's API key
-3. For OpenAI and Gemini: Click "Fetch Models" to see available models
-4. For Claude: Models are pre-loaded
-5. Select your preferred model
-6. Enter your Firecrawl.dev API key
-7. Click "Continue"
+2. For OpenAI and Gemini: Click "Load Models" to fetch available models (models load automatically when you switch providers)
+3. For Claude: Models are pre-loaded automatically
+4. Select your preferred model from the dropdown
+5. Click "Continue"
 
-API keys are stored in your browser's localStorage for convenience.
+**Note:** API keys are configured in Supabase and are not entered by users. Make sure you've added the appropriate API keys to your Supabase `api_keys` table before using the application.
 
 ### Step 2: Build Your Campaign
 
@@ -147,28 +182,33 @@ The tool will:
 
 ### `/api/models`
 - **Method**: POST
-- **Body**: `{ provider: string, apiKey: string }`
+- **Body**: `{ provider: string }`
 - **Returns**: List of available models for the provider
+- **Note**: API key is fetched server-side from Supabase
 
 ### `/api/firecrawl`
 - **Method**: POST
-- **Body**: `{ urls: string[], apiKey: string, extractionPrompt: string }`
+- **Body**: `{ urls: string[], extractionPrompt: string, provider?: AIProvider }`
 - **Returns**: Extracted landing page data
+- **Note**: Firecrawl API key is fetched server-side from Supabase
 
 ### `/api/group-keywords`
 - **Method**: POST
-- **Body**: `{ keywords: string[], landingPageData: LandingPageData[], campaignGoal: string, groupingPrompt: string, provider: AIProvider }`
+- **Body**: `{ keywords: string[], landingPageData: LandingPageData[], campaignGoal: string, groupingPrompt: string, provider: { name: string, model: string } }`
 - **Returns**: Grouped ad groups and irrelevant keywords
+- **Note**: Provider API key is fetched server-side from Supabase based on `provider.name`
 
 ### `/api/suggest-keywords`
 - **Method**: POST
-- **Body**: `{ adgroupTheme: string, existingKeywords: string[], landingPageData: LandingPageData[], campaignGoal: string, suggestionPrompt: string, provider: AIProvider }`
+- **Body**: `{ adgroupTheme: string, existingKeywords: string[], landingPageData: LandingPageData[], campaignGoal: string, suggestionPrompt: string, provider: { name: string, model: string } }`
 - **Returns**: Array of suggested keywords
+- **Note**: Provider API key is fetched server-side from Supabase
 
 ### `/api/generate-ads`
 - **Method**: POST
-- **Body**: `{ adgroupData: Adgroup, landingPageData: LandingPageData[], campaignGoal: string, adCopyPrompt: string, provider: AIProvider }`
+- **Body**: `{ adgroupData: Adgroup, landingPageData: LandingPageData[], campaignGoal: string, adCopyPrompt: string, provider: { name: string, model: string } }`
 - **Returns**: Headlines and descriptions
+- **Note**: Provider API key is fetched server-side from Supabase
 
 ### `/api/export`
 - **Method**: POST
@@ -210,12 +250,14 @@ This tool implements Google Ads best practices based on industry-leading resourc
 ## Troubleshooting
 
 ### API Key Issues
-- Ensure your API keys are valid and have sufficient credits/quota
-- For OpenAI: Check that your API key has access to the selected model
-- For Claude: Verify your API key is active on Anthropic's platform
+- **Keys not found**: Ensure you've added API keys to the `api_keys` table in Supabase
+- **Invalid keys**: Verify your API keys are correct in Supabase and have sufficient credits/quota
+- **For OpenAI**: Check that your API key has access to the selected model
+- **For Claude**: Verify your API key is active on Anthropic's platform
+- **RLS errors**: Ensure Row Level Security is properly configured on the `api_keys` table
 
 ### Firecrawl Errors
-- Verify your Firecrawl API key is correct
+- Verify your Firecrawl API key is correct in Supabase
 - Check that URLs are publicly accessible (not behind authentication)
 - Some URLs may take longer to process - be patient
 

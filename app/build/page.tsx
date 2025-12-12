@@ -13,7 +13,6 @@ import { createClient } from '@/lib/supabase';
 export default function BuildPage() {
   const router = useRouter();
   const [provider, setProvider] = useState<AIProvider | null>(null);
-  const [firecrawlKey, setFirecrawlKey] = useState('');
   const [campaignName, setCampaignName] = useState('');
   const [campaignGoal, setCampaignGoal] = useState('');
   const [urlsText, setUrlsText] = useState('');
@@ -34,15 +33,13 @@ export default function BuildPage() {
       }
 
       const savedProvider = sessionStorage.getItem('provider');
-      const savedFirecrawlKey = sessionStorage.getItem('firecrawlKey');
 
-      if (!savedProvider || !savedFirecrawlKey) {
+      if (!savedProvider) {
         router.push('/');
         return;
       }
 
       setProvider(JSON.parse(savedProvider));
-      setFirecrawlKey(savedFirecrawlKey);
 
       // Check if we're restoring from history
       const savedCampaignData = sessionStorage.getItem('campaignData');
@@ -132,7 +129,6 @@ export default function BuildPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           urls: validUrls,
-          apiKey: firecrawlKey,
           extractionPrompt: prompts.firecrawl,
           provider,
         }),
@@ -215,7 +211,7 @@ export default function BuildPage() {
         name: campaignName,
         goal: campaignGoal,
         provider: provider!,
-        firecrawlConfig: { apiKey: firecrawlKey },
+        firecrawlConfig: { apiKey: '' }, // API keys are stored server-side, not in client data
         landingPageUrls: validUrls,
         keywords: validKeywords,
         adgroups: adgroupsWithAds,

@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractMultipleLandingPages, scrapeAndExtractMultipleLandingPages } from '@/lib/firecrawl';
 import { AIProvider } from '@/types';
+import { getApiKey } from '@/lib/api-keys';
 
 export async function POST(request: NextRequest) {
   try {
-    const { urls, apiKey, extractionPrompt, provider } = await request.json();
+    const { urls, extractionPrompt, provider } = await request.json();
 
     if (!urls || !Array.isArray(urls) || urls.length === 0) {
       return NextResponse.json(
         { error: 'URLs array is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Firecrawl API key is required' },
         { status: 400 }
       );
     }
@@ -27,27 +21,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fetch firecrawl key from Supabase
+    const firecrawlKey = await getApiKey('firecrawl');
+
     // If provider is provided, use the new scrape + LLM approach
     // Otherwise, fall back to the existing extract endpoint for backward compatibility
     let results;
     if (provider) {
       // Validate provider structure
-      if (!provider.name || !provider.apiKey || !provider.model) {
+      if (!provider.name || !provider.model) {
         return NextResponse.json(
-          { error: 'Invalid provider structure. Provider must have name, apiKey, and model.' },
+          { error: 'Invalid provider structure. Provider must have name and model.' },
           { status: 400 }
         );
       }
 
+      // Fetch AI provider key from Supabase
+      const aiProviderKey = await getApiKey(provider.name as 'openai' | 'gemini' | 'claude');
+      
       const validatedProvider: AIProvider = {
         name: provider.name,
-        apiKey: provider.apiKey,
+        apiKey: aiProviderKey,
         model: provider.model,
       };
 
       results = await scrapeAndExtractMultipleLandingPages(
         urls,
-        apiKey,
+        firecrawlKey,
         extractionPrompt,
         validatedProvider
       );
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       // Fallback to existing extract endpoint
       results = await extractMultipleLandingPages(
         urls,
-        apiKey,
+        firecrawlKey,
         extractionPrompt
       );
     }

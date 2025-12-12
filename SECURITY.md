@@ -14,23 +14,28 @@
 - All sensitive keys are stored in environment variables
 
 ### Authentication
-- Magic link authentication (passwordless)
+- Email/password authentication
 - Approved email whitelist for access control
 - Generic error messages prevent information leakage
 - Row Level Security enabled on all database tables
 
+### API Key Storage
+- **Current Architecture**: API keys (OpenAI, Gemini, Claude, Firecrawl) are stored server-side in Supabase `api_keys` table
+- **Security**: 
+  - Keys are never exposed to the client
+  - Keys are fetched server-side only when needed
+  - Protected by Row Level Security (RLS) - only authenticated users can read
+  - Keys are never logged or exposed in error messages
+
 ## ⚠️ Security Considerations
 
-### User API Keys (By Design)
-- **Current Architecture**: User API keys (OpenAI, Gemini, Claude, Firecrawl) are stored client-side in localStorage/sessionStorage
-- **Why**: This is intentional - users provide their own API keys to use the service
-- **Risks**: 
-  - Keys are accessible to anyone with browser access
-  - Keys are sent to API routes (but validated server-side)
-- **Mitigation**: 
-  - Users should use API keys with limited scopes/permissions
-  - Consider implementing key rotation reminders
-  - Keys are never logged or exposed in error messages
+### API Key Management
+- **Storage**: API keys are stored in Supabase database with RLS enabled
+- **Access**: Only authenticated users can read keys (via RLS policy)
+- **Best Practices**: 
+  - Keys should be rotated regularly
+  - Use API keys with limited scopes/permissions when possible
+  - Monitor API usage for unusual activity
 
 ### API Routes
 - All API routes validate input
@@ -66,8 +71,9 @@
 ## 🔐 Key Management
 
 - **Supabase Keys**: Public keys (safe to expose)
-- **User API Keys**: Stored client-side (by design)
+- **API Keys**: Stored server-side in Supabase `api_keys` table (protected by RLS)
 - **No Service Keys**: No service_role or admin keys in codebase
+- **Client-Side**: No API keys are stored or transmitted client-side
 
 
 

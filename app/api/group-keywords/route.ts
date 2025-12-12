@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { callLLM } from '@/lib/providers';
 import { formatPrompt, formatLandingPagesForPrompt, defaultPrompts } from '@/lib/prompts';
 import { AIProvider, LandingPageData } from '@/types';
+import { getApiKey } from '@/lib/api-keys';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,12 +29,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!provider) {
+    if (!provider || !provider.name || !provider.model) {
       return NextResponse.json(
-        { error: 'AI provider is required' },
+        { error: 'AI provider with name and model is required' },
         { status: 400 }
       );
     }
+
+    // Fetch API key from Supabase based on provider name
+    const apiKey = await getApiKey(provider.name as 'openai' | 'gemini' | 'claude');
+    
+    // Construct AIProvider with fetched key
+    const aiProvider: AIProvider = {
+      name: provider.name,
+      apiKey: apiKey,
+      model: provider.model,
+    };
 
     const prompt = formatPrompt(groupingPrompt || defaultPrompts.keywordGrouping, {
       campaignGoal,
@@ -41,7 +52,7 @@ export async function POST(request: NextRequest) {
       keywords: keywords.join(', '),
     });
 
-    const response = await callLLM(provider as AIProvider, prompt);
+    const response = await callLLM(aiProvider, prompt);
     
     // Parse JSON response
     let parsed;

@@ -88,12 +88,9 @@ export default function HistoryPage() {
       sessionStorage.setItem('campaignData', JSON.stringify(campaignData));
       sessionStorage.setItem('currentRunId', run.id);
       
-      // Also restore provider and firecrawl key for build page
+      // Also restore provider for build page (API keys are stored server-side)
       if (campaignData.provider) {
         sessionStorage.setItem('provider', JSON.stringify(campaignData.provider));
-      }
-      if (campaignData.firecrawlConfig?.apiKey) {
-        sessionStorage.setItem('firecrawlKey', campaignData.firecrawlConfig.apiKey);
       }
 
       // Navigate based on snapshot stage
