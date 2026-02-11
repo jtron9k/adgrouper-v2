@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
 import { Run, Snapshot, Campaign } from '@/types';
 
 interface RunWithSnapshots extends Run {
@@ -15,25 +14,10 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    checkAuthAndLoadRuns();
-  }, []);
-
-  const checkAuthAndLoadRuns = async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      setIsAuthenticated(false);
-      setLoading(false);
-      return;
-    }
-
-    setIsAuthenticated(true);
     loadRuns();
-  };
+  }, []);
 
   const loadRuns = async () => {
     try {
@@ -152,27 +136,6 @@ export default function HistoryPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-gray-600 dark:text-gray-400">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Sign in to View History
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            You need to be signed in to view your campaign history.
-          </p>
-          <button
-            onClick={() => router.push('/login')}
-            className="bg-blue-600 dark:bg-blue-700 text-white py-2 px-6 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 font-medium"
-          >
-            Sign In
-          </button>
-        </div>
       </div>
     );
   }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,26 +9,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [linkSent, setLinkSent] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
         router.push('/');
         return;
       }
-      
       setCheckingAuth(false);
-
-      // Show error from auth callback (e.g. user not in approved_emails)
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('error') === 'not_approved') {
-        setError('This email is not approved for access.');
-        window.history.replaceState({}, '', '/login');
-      }
     };
 
     checkAuth();
@@ -45,17 +33,19 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
+        credentials: 'include',
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to send sign-in link');
+        throw new Error(data.error || 'Failed to sign in');
       }
 
-      setLinkSent(true);
+      router.push('/');
+      router.refresh();
     } catch (err: any) {
-      setError(err.message || 'Failed to send sign-in link');
+      setError(err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
@@ -69,33 +59,6 @@ export default function LoginPage() {
     );
   }
 
-  if (linkSent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-          <div className="text-center">
-            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
-              Check your email
-            </h2>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              We sent a sign-in link to <strong>{email}</strong>. Click the link in the email to sign in.
-            </p>
-            <p className="mt-4 text-sm text-gray-500 dark:text-gray-500">
-              Didn&apos;t receive your email? Check your spam folder or{' '}
-              <button
-                type="button"
-                onClick={() => setLinkSent(false)}
-                className="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                try again
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
@@ -104,7 +67,7 @@ export default function LoginPage() {
             Sign In
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Enter your approved email to receive a sign-in link
+            Enter your approved email to sign in
           </p>
         </div>
 
@@ -139,7 +102,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 font-medium"
             >
-              {loading ? 'Sending link...' : 'Send sign-in link'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
@@ -147,4 +110,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

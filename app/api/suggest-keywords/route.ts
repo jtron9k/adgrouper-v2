@@ -3,9 +3,15 @@ import { callLLM } from '@/lib/providers';
 import { formatPrompt, formatLandingPagesForPrompt, defaultPrompts } from '@/lib/prompts';
 import { AIProvider, LandingPageData } from '@/types';
 import { getApiKey } from '@/lib/api-keys';
+import { getSession } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const {
       adgroupTheme,
       existingKeywords,

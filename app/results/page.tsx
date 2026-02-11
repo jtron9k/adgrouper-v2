@@ -6,8 +6,6 @@ import { Campaign, Adgroup, Keyword } from '@/types';
 import AdgroupCard from '@/components/AdgroupCard';
 import KeywordList from '@/components/KeywordList';
 import { getLastUpdated } from '@/lib/version';
-import { createClient } from '@/lib/supabase';
-
 export default function ResultsPage() {
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -17,16 +15,7 @@ export default function ResultsPage() {
   const hasSavedResults = useRef(false);
 
   useEffect(() => {
-    const checkAuthAndLoad = async () => {
-      // Check authentication first
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-
+    const loadAndSave = async () => {
       const savedData = sessionStorage.getItem('campaignData');
       if (!savedData) {
         router.push('/');
@@ -49,15 +38,10 @@ export default function ResultsPage() {
       }
     };
 
-    checkAuthAndLoad();
+    loadAndSave();
   }, [router]);
 
   const saveResultsSnapshot = async (id: string, campaignData: Campaign) => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) return;
-
     try {
       await fetch(`/api/runs/${id}`, {
         method: 'PATCH',

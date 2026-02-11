@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateExcelFile } from '@/lib/excel';
 import { Campaign } from '@/types';
+import { getSession } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const campaign = await request.json();
 
     if (!campaign) {

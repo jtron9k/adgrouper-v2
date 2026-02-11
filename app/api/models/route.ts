@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIModels, getGeminiModels, getClaudeModels } from '@/lib/providers';
 import { getApiKey } from '@/lib/api-keys';
+import { getSession } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { provider } = await request.json();
 
     if (!provider) {

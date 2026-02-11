@@ -1,5 +1,21 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+
+/**
+ * Admin client with service role - bypasses RLS.
+ * Use when session has been verified (approved email).
+ */
+export function createAdminSupabaseClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required');
+  }
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceRoleKey
+  );
+}
 
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies();
@@ -19,7 +35,6 @@ export async function createServerSupabaseClient() {
             );
           } catch {
             // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing user sessions.
           }
         },
       },

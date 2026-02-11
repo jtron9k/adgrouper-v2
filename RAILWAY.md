@@ -7,34 +7,25 @@ You **must** set these environment variables in Railway for the app to work:
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+SESSION_SECRET=your-secret-at-least-32-characters-long
 ```
 
-### Configure Authentication in Supabase
+### Configure Access
 
-1. **Enable Email (Magic Link)**:
-   - Go to your Supabase dashboard
-   - Navigate to Authentication > Providers
-   - Ensure "Email" provider is enabled
-   - Magic links are enabled by default—no password required
-
-2. **Add Approved Emails**:
+1. **Add Approved Emails**:
    - Add each user's email to the `approved_emails` table in your database
-   - Only emails in this table can request a sign-in link
-   - Users are created automatically on first sign-in
+   - Only emails in this table can sign in
+   - No user registration—admins add emails manually
 
-3. **Redirect URLs** (required for magic links and GitHub OAuth):
-   - Go to Authentication > URL Configuration
-   - Add your callback URL(s) to the redirect allowlist, e.g.:
-     - `https://your-app.railway.app/api/auth/callback` (production)
-     - `http://localhost:3000/api/auth/callback` (local development)
+2. **Get Supabase Keys**:
+   - Go to Supabase dashboard → Project Settings → API
+   - Copy the anon key and service role key
+   - **Important:** Keep the service role key secret—it bypasses all RLS
 
-4. **GitHub OAuth** (optional):
-   - Go to [GitHub OAuth Apps](https://github.com/settings/developers) → New OAuth App
-   - **Homepage URL**: your app URL (e.g. `https://your-app.railway.app`)
-   - **Authorization callback URL**: `https://<project-ref>.supabase.co/auth/v1/callback` (get this from Supabase → Authentication → Providers → GitHub)
-   - Copy the Client ID and Client Secret
-   - In Supabase: Authentication → Providers → GitHub → Enable and paste credentials
-   - Add GitHub users' emails to `approved_emails`—only approved emails can sign in
+3. **Session Secret**:
+   - `SESSION_SECRET` signs session cookies (32+ characters)
+   - Use a random string in production (e.g. `openssl rand -base64 32`)
 
 ### How to Set Environment Variables in Railway
 
@@ -43,11 +34,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 3. Go to the "Variables" tab
 4. Click "New Variable"
 5. Add each variable:
-   - Name: `NEXT_PUBLIC_SUPABASE_URL`
-   - Value: Your Supabase project URL (get it from Supabase dashboard > Project Settings > API)
-6. Add the second variable:
-   - Name: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - Value: Your Supabase anon key (get it from Supabase dashboard > Project Settings > API)
+   - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon key
+   - `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+   - `SESSION_SECRET` - Your session signing secret (32+ chars)
 
 ## Build Configuration
 
@@ -62,7 +52,7 @@ If not, set these manually in Railway:
 ## Troubleshooting 500 Errors
 
 ### 1. Check Environment Variables
-Make sure both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set in Railway.
+Make sure all four required variables are set in Railway.
 
 ### 2. Check Build Logs
 Look at the Railway build logs to see if there are any build errors.
@@ -73,12 +63,12 @@ Check the Railway runtime logs for any error messages.
 ### 4. Common Issues
 
 **Missing Environment Variables:**
-- Error: `NEXT_PUBLIC_SUPABASE_URL is not defined`
+- Error: `SUPABASE_SERVICE_ROLE_KEY is required` or `SESSION_SECRET must be set`
 - Solution: Add the environment variables in Railway
 
 **Database Connection Issues:**
 - Make sure your Supabase project is active
-- Verify the URL and anon key are correct
+- Verify the URL and keys are correct
 
 **Build Failures:**
 - Check that Node.js version is 18+ (Railway should auto-detect)
@@ -94,10 +84,8 @@ The app should respond at the root URL `/` after successful deployment.
 
 ## Current Configuration
 
-- **Authentication Method**: Magic link (email-only) + GitHub OAuth
+- **Authentication**: Email-only access—user enters email, app checks if it's in `approved_emails` table. No passwords, no magic links.
 
-**⚠️ Important**: 
-- Add each user's email to the `approved_emails` table—only approved emails can sign in (for both magic link and GitHub)
-- Users are created automatically on first sign-in
-- Configure redirect URLs in Supabase (Authentication > URL Configuration) for your app's callback
-
+**⚠️ Important**:
+- Add each user's email to the `approved_emails` table—only approved emails can sign in
+- Users cannot self-register; admins must add emails manually

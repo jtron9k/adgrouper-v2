@@ -54,7 +54,11 @@ yarn install
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+SESSION_SECRET=your-secret-at-least-32-characters-long
 ```
+
+**Note:** Get the service role key from Supabase dashboard → Project Settings → API. Keep it secret. `SESSION_SECRET` is used to sign session cookies—use a random string of 32+ characters in production.
 
 4. Configure API keys in Supabase (see [API Key Configuration](#api-key-configuration) section below)
 
@@ -109,7 +113,10 @@ See [RAILWAY.md](./RAILWAY.md) for detailed Railway deployment instructions.
 2. Add these environment variables in Railway:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-3. Deploy!
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SESSION_SECRET` (32+ characters, for signing session cookies)
+3. Add approved emails to the `approved_emails` table in Supabase
+4. Deploy!
 
 **Important:** The app will fail with a 500 error if Supabase environment variables are not set.
 

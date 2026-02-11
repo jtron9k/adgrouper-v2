@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractMultipleLandingPages, scrapeAndExtractMultipleLandingPages } from '@/lib/firecrawl';
 import { AIProvider } from '@/types';
 import { getApiKey } from '@/lib/api-keys';
+import { getSession } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { urls, extractionPrompt, provider } = await request.json();
 
     if (!urls || !Array.isArray(urls) || urls.length === 0) {

@@ -1,27 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { createAdminSupabaseClient } from '@/lib/supabase-server';
+import { getSession } from '@/lib/session';
 
-/**
- * API route to fetch API keys for client-side use.
- * Only returns keys to authenticated users.
- * Note: This route exists for compatibility but keys should ideally
- * never be sent to the client. Consider removing this if not needed.
- */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    
-    // Verify user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
+    const session = await getSession();
+    if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Fetch all API keys
+    const supabase = createAdminSupabaseClient();
     const { data, error } = await supabase
       .from('api_keys')
       .select('key_type, api_key');
@@ -51,9 +42,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-
-
-
-
-

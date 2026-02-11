@@ -8,8 +8,6 @@ import ProgressIndicator from '@/components/ProgressIndicator';
 import { defaultPrompts } from '@/lib/prompts';
 import { validateUrls, validateKeywords, parseCsv } from '@/lib/validation';
 import { getLastUpdated } from '@/lib/version';
-import { createClient } from '@/lib/supabase';
-
 export default function BuildPage() {
   const router = useRouter();
   const [provider, setProvider] = useState<AIProvider | null>(null);
@@ -22,16 +20,7 @@ export default function BuildPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const checkAuthAndLoad = async () => {
-      // Check authentication first
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-
+    const loadAndCheck = async () => {
       const savedProvider = sessionStorage.getItem('provider');
 
       if (!savedProvider) {
@@ -59,7 +48,7 @@ export default function BuildPage() {
       }
     };
 
-    checkAuthAndLoad();
+    loadAndCheck();
   }, [router]);
 
   const handleFileUpload = (type: 'urls' | 'keywords', file: File) => {
@@ -221,13 +210,8 @@ export default function BuildPage() {
 
       sessionStorage.setItem('campaignData', JSON.stringify(campaignData));
 
-      // Save run to database if user is logged in
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        try {
-          const runResponse = await fetch('/api/runs', {
+      try {
+        const runResponse = await fetch('/api/runs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -238,15 +222,12 @@ export default function BuildPage() {
             }),
           });
 
-          if (runResponse.ok) {
-            const { run } = await runResponse.json();
-            // Store run ID for results page to update
-            sessionStorage.setItem('currentRunId', run.id);
-          }
-        } catch (saveError) {
-          // Don't block navigation if save fails
-          console.error('Failed to save run:', saveError);
+        if (runResponse.ok) {
+          const { run } = await runResponse.json();
+          sessionStorage.setItem('currentRunId', run.id);
         }
+      } catch (saveError) {
+        console.error('Failed to save run:', saveError);
       }
 
       router.push('/results');
