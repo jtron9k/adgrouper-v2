@@ -9,3 +9,9 @@ CREATE POLICY "Authenticated users can view all runs" ON runs
 
 -- Note: Users can still only create/update/delete their own runs
 -- If you want to allow all users to delete any run, update the DELETE policy as well
+
+
+
+
+
+

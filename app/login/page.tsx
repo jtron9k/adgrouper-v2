@@ -7,10 +7,10 @@ import { createClient } from '@/lib/supabase';
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [linkSent, setLinkSent] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -37,20 +37,18 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to sign in');
+        throw new Error(data.error || 'Failed to send sign-in link');
       }
 
-      // Redirect on success
-      router.push('/');
-      router.refresh();
+      setLinkSent(true);
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password');
+      setError(err.message || 'Failed to send sign-in link');
     } finally {
       setLoading(false);
     }
@@ -64,6 +62,33 @@ export default function LoginPage() {
     );
   }
 
+  if (linkSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+          <div className="text-center">
+            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
+              Check your email
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              We sent a sign-in link to <strong>{email}</strong>. Click the link in the email to sign in.
+            </p>
+            <p className="mt-4 text-sm text-gray-500 dark:text-gray-500">
+              Didn&apos;t receive your email? Check your spam folder or{' '}
+              <button
+                type="button"
+                onClick={() => setLinkSent(false)}
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                try again
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
@@ -72,7 +97,7 @@ export default function LoginPage() {
             Sign In
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Enter your email and password to sign in
+            Enter your approved email to receive a sign-in link
           </p>
         </div>
 
@@ -102,30 +127,12 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <div>
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 font-medium"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Sending link...' : 'Send sign-in link'}
             </button>
           </div>
         </form>

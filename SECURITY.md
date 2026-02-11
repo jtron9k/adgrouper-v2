@@ -14,7 +14,7 @@
 - All sensitive keys are stored in environment variables
 
 ### Authentication
-- Email/password authentication
+- Magic link (email-only) authentication—no passwords
 - Approved email whitelist for access control
 - Generic error messages prevent information leakage
 - Row Level Security enabled on all database tables
@@ -74,6 +74,12 @@
 - **API Keys**: Stored server-side in Supabase `api_keys` table (protected by RLS)
 - **No Service Keys**: No service_role or admin keys in codebase
 - **Client-Side**: No API keys are stored or transmitted client-side
+
+
+
+
+
+
 
 
 

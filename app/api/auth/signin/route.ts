@@ -4,20 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { email } = await request.json();
     const cookieStore = await cookies();
 
     // Validate inputs
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json(
         { error: 'Invalid email address' },
-        { status: 400 }
-      );
-    }
-
-    if (!password || typeof password !== 'string' || password.length === 0) {
-      return NextResponse.json(
-        { error: 'Password is required' },
         { status: 400 }
       );
     }
@@ -53,31 +46,34 @@ export async function POST(request: NextRequest) {
     // This prevents information leakage about whether email exists in table
     if (emailError || !approvedEmail) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'This email is not approved for access.' },
         { status: 401 }
       );
     }
 
-    // Sign in with email and password
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
+    // Get origin for redirect URL (e.g. https://yourdomain.com or http://localhost:3000)
+    const origin = request.headers.get('origin') || request.nextUrl.origin;
+    const redirectTo = `${origin}/api/auth/callback`;
+
+    // Send magic link - no password required
+    const { error: authError } = await supabase.auth.signInWithOtp({
       email: normalizedEmail,
-      password,
+      options: {
+        shouldCreateUser: true, // Create user on first magic link if approved
+        emailRedirectTo: redirectTo,
+      },
     });
 
-    // Use generic error messages for auth errors to avoid information leakage
-    if (authError || !data.user) {
+    // Use generic error messages to avoid information leakage
+    if (authError) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
+        { error: 'An error occurred. Please try again later.' },
+        { status: 500 }
       );
     }
 
     return NextResponse.json({ 
-      message: 'Signed in successfully',
-      user: {
-        id: data.user.id,
-        email: data.user.email,
-      }
+      message: 'Check your email for a sign-in link.',
     });
   } catch (error: any) {
     // Catch any unexpected errors and return generic message

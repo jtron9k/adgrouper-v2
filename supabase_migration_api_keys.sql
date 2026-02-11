@@ -25,3 +25,9 @@ DROP POLICY IF EXISTS "Authenticated users can read api_keys" ON api_keys;
 -- Create policy for authenticated users to read
 CREATE POLICY "Authenticated users can read api_keys" ON api_keys
   FOR SELECT USING (auth.role() = 'authenticated');
+
+
+
+
+
+

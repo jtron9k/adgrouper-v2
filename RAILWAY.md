@@ -9,25 +9,24 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-**Note:** `NEXT_PUBLIC_APP_URL` is optional now (no longer needed for email/password authentication).
-
 ### Configure Authentication in Supabase
 
-1. **Enable Email/Password Authentication** (should be enabled by default):
+1. **Enable Email (Magic Link)**:
    - Go to your Supabase dashboard
    - Navigate to Authentication > Providers
    - Ensure "Email" provider is enabled
-   - Under Email settings, make sure "Enable email confirmations" is configured as needed
+   - Magic links are enabled by default—no password required
 
-2. **Create User Accounts**:
-   - Go to Authentication > Users
-   - Click "Add user" → "Create new user"
-   - Enter email and password for each user
-   - **Important:** Add each user's email to the `approved_emails` table in your database
+2. **Add Approved Emails**:
+   - Add each user's email to the `approved_emails` table in your database
+   - Only emails in this table can request a sign-in link
+   - Users are created automatically on first sign-in
 
-3. **Redirect URLs** (optional, no longer required for email/password auth):
-   - The callback URL configuration is no longer needed since we're using email/password instead of magic links
-   - You can keep existing redirect URLs if you want, but they won't be used
+3. **Redirect URLs** (required for magic links):
+   - Go to Authentication > URL Configuration
+   - Add your callback URL(s) to the redirect allowlist, e.g.:
+     - `https://your-app.railway.app/api/auth/callback` (production)
+     - `http://localhost:3000/api/auth/callback` (local development)
 
 ### How to Set Environment Variables in Railway
 
@@ -87,10 +86,10 @@ The app should respond at the root URL `/` after successful deployment.
 
 ## Current Configuration
 
-- **Authentication Method**: Email/Password (no magic links)
+- **Authentication Method**: Magic link (email-only, no passwords)
 
 **⚠️ Important**: 
-- User accounts must be created manually in Supabase (Authentication > Users)
-- Each user's email must be added to the `approved_emails` table in your database
-- Email/Password authentication should be enabled in Supabase (Authentication > Providers > Email)
+- Add each user's email to the `approved_emails` table—only approved emails can sign in
+- Users are created automatically when they click the magic link for the first time
+- Configure redirect URLs in Supabase (Authentication > URL Configuration) for your app's callback
 
