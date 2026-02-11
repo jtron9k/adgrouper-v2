@@ -14,7 +14,7 @@
 - All sensitive keys are stored in environment variables
 
 ### Authentication
-- Magic link (email-only) authentication—no passwords
+- Magic link (email-only) + GitHub OAuth—no passwords
 - Approved email whitelist for access control
 - Generic error messages prevent information leakage
 - Row Level Security enabled on all database tables

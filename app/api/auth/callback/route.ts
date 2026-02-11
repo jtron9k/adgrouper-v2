@@ -26,10 +26,24 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error && data.user?.email) {
+      // Check approved_emails for OAuth users (GitHub, etc.)
+      const normalizedEmail = data.user.email.toLowerCase().trim();
+      const { data: approvedEmail, error: emailError } = await supabase
+        .from('approved_emails')
+        .select('email')
+        .eq('email', normalizedEmail)
+        .single();
+
+      if (emailError || !approvedEmail) {
+        await supabase.auth.signOut();
+        return NextResponse.redirect(`${origin}/login?error=not_approved`);
+      }
+    }
   }
 
-  // URL to redirect to after sign in process completes
   return NextResponse.redirect(`${origin}/`);
 }
 

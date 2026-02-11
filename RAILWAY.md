@@ -22,11 +22,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
    - Only emails in this table can request a sign-in link
    - Users are created automatically on first sign-in
 
-3. **Redirect URLs** (required for magic links):
+3. **Redirect URLs** (required for magic links and GitHub OAuth):
    - Go to Authentication > URL Configuration
    - Add your callback URL(s) to the redirect allowlist, e.g.:
      - `https://your-app.railway.app/api/auth/callback` (production)
      - `http://localhost:3000/api/auth/callback` (local development)
+
+4. **GitHub OAuth** (optional):
+   - Go to [GitHub OAuth Apps](https://github.com/settings/developers) → New OAuth App
+   - **Homepage URL**: your app URL (e.g. `https://your-app.railway.app`)
+   - **Authorization callback URL**: `https://<project-ref>.supabase.co/auth/v1/callback` (get this from Supabase → Authentication → Providers → GitHub)
+   - Copy the Client ID and Client Secret
+   - In Supabase: Authentication → Providers → GitHub → Enable and paste credentials
+   - Add GitHub users' emails to `approved_emails`—only approved emails can sign in
 
 ### How to Set Environment Variables in Railway
 
@@ -86,10 +94,10 @@ The app should respond at the root URL `/` after successful deployment.
 
 ## Current Configuration
 
-- **Authentication Method**: Magic link (email-only, no passwords)
+- **Authentication Method**: Magic link (email-only) + GitHub OAuth
 
 **⚠️ Important**: 
-- Add each user's email to the `approved_emails` table—only approved emails can sign in
-- Users are created automatically when they click the magic link for the first time
+- Add each user's email to the `approved_emails` table—only approved emails can sign in (for both magic link and GitHub)
+- Users are created automatically on first sign-in
 - Configure redirect URLs in Supabase (Authentication > URL Configuration) for your app's callback
 
