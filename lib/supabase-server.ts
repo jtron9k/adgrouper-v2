@@ -1,8 +1,14 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 
-export async function createServerSupabaseClient() {
-  const cookieStore = await cookies();
+function getSupabaseUrl(): string {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL.');
+  }
+  return url;
+}
+
+function getSupabaseKey(): string {
   const supabaseKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseKey) {
@@ -10,30 +16,26 @@ export async function createServerSupabaseClient() {
       'Missing Supabase key. Set SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY.'
     );
   }
+  return supabaseKey;
+}
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey,
+export function createAdminSupabaseClient() {
+  return createClient(
+    getSupabaseUrl(),
+    getSupabaseKey(),
     {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Ignore setAll failures in contexts where cookies are read-only.
-          }
-        },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
       },
     }
   );
 }
 
-
+export async function createServerSupabaseClient() {
+  return createAdminSupabaseClient();
+}
 
 
 

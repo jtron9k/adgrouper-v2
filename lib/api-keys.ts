@@ -43,7 +43,7 @@ export async function getAllApiKeys(): Promise<{
   }
 
   const keys: Record<string, string> = {};
-  data.forEach((row) => {
+  data.forEach((row: { key_type: string; api_key: string }) => {
     keys[row.key_type] = row.api_key;
   });
 
@@ -54,7 +54,6 @@ export async function getAllApiKeys(): Promise<{
     claude: keys.claude || '',
   };
 }
-
 
 
 
