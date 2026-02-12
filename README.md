@@ -28,7 +28,7 @@ An AI-powered web application that helps users create high-performing Google Ads
 ### Prerequisites
 
 - Node.js 18+ and npm/yarn
-- Supabase account (for authentication and data storage)
+- Supabase account (for approved email list and data storage)
 - API keys for:
   - One or more of: OpenAI, Google Gemini, or Anthropic Claude
   - Firecrawl.dev
@@ -55,21 +55,21 @@ yarn install
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
-SESSION_SECRET=your-secret-at-least-32-characters-long
+AUTH_SESSION_SECRET=your-long-random-secret-here
 ```
 
-**Note:** Get the service role key from Supabase dashboard → Project Settings → API. Keep it secret. `SESSION_SECRET` is used to sign session cookies—use a random string of 32+ characters in production.
+4. Add allowed users to `approved_emails` in Supabase (only listed emails can sign in)
 
-4. Configure API keys in Supabase (see [API Key Configuration](#api-key-configuration) section below)
+5. Configure API keys in Supabase (see [API Key Configuration](#api-key-configuration) section below)
 
-5. Run the development server:
+6. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser
+7. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### API Key Configuration
 
@@ -100,7 +100,7 @@ API keys are stored securely in your Supabase database and are never exposed to 
 
 3. **Verify Row Level Security (RLS)** is enabled:
    - The table should have RLS enabled
-   - Only authenticated users can read the keys (configured automatically by the migration script)
+   - Server routes read keys with `SUPABASE_SERVICE_ROLE_KEY`
 
 **Note:** You only need to add keys for the providers you plan to use. At minimum, you need the `firecrawl` key.
 
@@ -114,11 +114,10 @@ See [RAILWAY.md](./RAILWAY.md) for detailed Railway deployment instructions.
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - `SESSION_SECRET` (32+ characters, for signing session cookies)
-3. Add approved emails to the `approved_emails` table in Supabase
-4. Deploy!
+   - `AUTH_SESSION_SECRET`
+3. Deploy!
 
-**Important:** The app will fail with a 500 error if Supabase environment variables are not set.
+**Important:** The app will fail with a 500 error if required auth or Supabase environment variables are not set.
 
 ## Usage Guide
 
@@ -261,7 +260,7 @@ This tool implements Google Ads best practices based on industry-leading resourc
 - **Invalid keys**: Verify your API keys are correct in Supabase and have sufficient credits/quota
 - **For OpenAI**: Check that your API key has access to the selected model
 - **For Claude**: Verify your API key is active on Anthropic's platform
-- **RLS errors**: Ensure Row Level Security is properly configured on the `api_keys` table
+- **RLS errors**: Ensure `SUPABASE_SERVICE_ROLE_KEY` is set in your environment
 
 ### Firecrawl Errors
 - Verify your Firecrawl API key is correct in Supabase
@@ -289,7 +288,5 @@ This is a private project. For issues or suggestions, please contact the reposit
 ## Support
 
 For questions or issues, please open an issue on the GitHub repository.
-
-
 
 

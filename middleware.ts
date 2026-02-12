@@ -1,50 +1,31 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const SESSION_COOKIE = 'app_session';
-
-// Routes that require a valid session
-const protectedPaths = ['/', '/build', '/history', '/results'];
-// Auth routes - redirect to / if already logged in
-const authPaths = ['/login'];
-
-function isProtectedPath(pathname: string): boolean {
-  return protectedPaths.some((p) => pathname === p || pathname.startsWith(p + '/'));
-}
-
-function isAuthPath(pathname: string): boolean {
-  return authPaths.includes(pathname);
-}
-
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Skip static files and API routes
+  // Check for required environment variables
   if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
-    pathname.includes('.')
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY)
   ) {
-    return NextResponse.next();
+    console.error(
+      'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and either NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY'
+    );
+    return NextResponse.json(
+      { error: 'Server configuration error. Please contact support.' },
+      { status: 500 }
+    );
   }
 
-  const hasSession = request.cookies.has(SESSION_COOKIE);
-
-  if (isAuthPath(pathname)) {
-    if (hasSession) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-    return NextResponse.next();
-  }
-
-  if (isProtectedPath(pathname) && !hasSession) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  return NextResponse.next();
+  return NextResponse.next({ request });
 }
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

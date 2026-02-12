@@ -6,6 +6,7 @@ import { Campaign, Adgroup, Keyword } from '@/types';
 import AdgroupCard from '@/components/AdgroupCard';
 import KeywordList from '@/components/KeywordList';
 import { getLastUpdated } from '@/lib/version';
+
 export default function ResultsPage() {
   const router = useRouter();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -15,7 +16,18 @@ export default function ResultsPage() {
   const hasSavedResults = useRef(false);
 
   useEffect(() => {
-    const loadAndSave = async () => {
+    const checkAuthAndLoad = async () => {
+      try {
+        const authResponse = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (!authResponse.ok) {
+          router.push('/login');
+          return;
+        }
+      } catch {
+        router.push('/login');
+        return;
+      }
+
       const savedData = sessionStorage.getItem('campaignData');
       if (!savedData) {
         router.push('/');
@@ -38,7 +50,7 @@ export default function ResultsPage() {
       }
     };
 
-    loadAndSave();
+    checkAuthAndLoad();
   }, [router]);
 
   const saveResultsSnapshot = async (id: string, campaignData: Campaign) => {

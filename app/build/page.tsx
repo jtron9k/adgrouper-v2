@@ -8,6 +8,7 @@ import ProgressIndicator from '@/components/ProgressIndicator';
 import { defaultPrompts } from '@/lib/prompts';
 import { validateUrls, validateKeywords, parseCsv } from '@/lib/validation';
 import { getLastUpdated } from '@/lib/version';
+
 export default function BuildPage() {
   const router = useRouter();
   const [provider, setProvider] = useState<AIProvider | null>(null);
@@ -20,7 +21,18 @@ export default function BuildPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const loadAndCheck = async () => {
+    const checkAuthAndLoad = async () => {
+      try {
+        const authResponse = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (!authResponse.ok) {
+          router.push('/login');
+          return;
+        }
+      } catch {
+        router.push('/login');
+        return;
+      }
+
       const savedProvider = sessionStorage.getItem('provider');
 
       if (!savedProvider) {
@@ -48,7 +60,7 @@ export default function BuildPage() {
       }
     };
 
-    loadAndCheck();
+    checkAuthAndLoad();
   }, [router]);
 
   const handleFileUpload = (type: 'urls' | 'keywords', file: File) => {
@@ -212,21 +224,23 @@ export default function BuildPage() {
 
       try {
         const runResponse = await fetch('/api/runs', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              campaignName,
-              campaignGoal,
-              stage: 'submitted',
-              data: campaignData,
-            }),
-          });
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            campaignName,
+            campaignGoal,
+            stage: 'submitted',
+            data: campaignData,
+          }),
+        });
 
         if (runResponse.ok) {
           const { run } = await runResponse.json();
+          // Store run ID for results page to update
           sessionStorage.setItem('currentRunId', run.id);
         }
       } catch (saveError) {
+        // Don't block navigation if save fails
         console.error('Failed to save run:', saveError);
       }
 
@@ -395,4 +409,3 @@ export default function BuildPage() {
     </div>
   );
 }
-

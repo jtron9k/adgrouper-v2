@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { UnauthorizedError, requireAuth } from '@/lib/require-auth';
 
 export async function GET() {
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const session = await requireAuth();
+    return NextResponse.json({
+      authenticated: true,
+      email: session.email,
+    });
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    return NextResponse.json({ error: 'An error occurred.' }, { status: 500 });
   }
-  return NextResponse.json({ email: session.email });
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -12,11 +12,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        router.push('/');
-        return;
+      try {
+        const response = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (response.ok) {
+          router.push('/');
+          return;
+        }
+      } catch {
+        // Ignore and continue to login screen
       }
+
       setCheckingAuth(false);
     };
 
@@ -33,7 +38,6 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
-        credentials: 'include',
       });
 
       const data = await response.json();
@@ -42,6 +46,7 @@ export default function LoginPage() {
         throw new Error(data.error || 'Failed to sign in');
       }
 
+      window.dispatchEvent(new Event('auth-state-changed'));
       router.push('/');
       router.refresh();
     } catch (err: any) {
@@ -67,7 +72,7 @@ export default function LoginPage() {
             Sign In
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Enter your approved email to sign in
+            Enter your approved email to continue
           </p>
         </div>
 
@@ -102,7 +107,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 font-medium"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </div>
         </form>

@@ -11,12 +11,12 @@ export default function NavBar() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const updateSession = async () => {
       try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setEmail(data.email);
+        const response = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (response.ok) {
+          const data = await response.json();
+          setEmail(data.email || null);
         } else {
           setEmail(null);
         }
@@ -27,13 +27,25 @@ export default function NavBar() {
       }
     };
 
-    fetchUser();
+    // Get initial session
+    updateSession();
+
+    // Listen for custom auth state change event
+    const handleAuthStateChanged = () => {
+      updateSession();
+    };
+    window.addEventListener('auth-state-changed', handleAuthStateChanged);
+
+    return () => {
+      window.removeEventListener('auth-state-changed', handleAuthStateChanged);
+    };
   }, []);
 
   const handleSignOut = async () => {
     try {
-      await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' });
+      await fetch('/api/auth/signout', { method: 'POST' });
       setEmail(null);
+      window.dispatchEvent(new Event('auth-state-changed'));
       router.push('/login');
       router.refresh();
     } catch (error) {
@@ -48,8 +60,8 @@ export default function NavBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14">
           <div className="flex items-center space-x-8">
-            <Link
-              href="/"
+            <Link 
+              href="/" 
               className="text-lg font-semibold text-gray-900 dark:text-gray-100"
             >
               Search Ads Campaign Builder
@@ -58,8 +70,8 @@ export default function NavBar() {
               <Link
                 href="/"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/')
-                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                  isActive('/') 
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
@@ -68,8 +80,8 @@ export default function NavBar() {
               <Link
                 href="/history"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/history')
-                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                  isActive('/history') 
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
@@ -96,8 +108,8 @@ export default function NavBar() {
               <Link
                 href="/login"
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/login')
-                    ? 'bg-blue-600 text-white'
+                  isActive('/login') 
+                    ? 'bg-blue-600 text-white' 
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >

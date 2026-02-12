@@ -14,10 +14,29 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    loadRuns();
+    checkAuthAndLoadRuns();
   }, []);
+
+  const checkAuthAndLoadRuns = async () => {
+    try {
+      const response = await fetch('/api/auth/me', { cache: 'no-store' });
+      if (!response.ok) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
+    }
+
+    setIsAuthenticated(true);
+    loadRuns();
+  };
 
   const loadRuns = async () => {
     try {
@@ -140,6 +159,27 @@ export default function HistoryPage() {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Sign in to View History
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            You need to be signed in to view your campaign history.
+          </p>
+          <button
+            onClick={() => router.push('/login')}
+            className="bg-blue-600 dark:bg-blue-700 text-white py-2 px-6 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 font-medium"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -257,4 +297,3 @@ export default function HistoryPage() {
     </div>
   );
 }
-
