@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateExcelFile } from '@/lib/excel';
 import { Campaign } from '@/types';
-import { getSession } from '@/lib/session';
+import { requireAuth, UnauthorizedError } from '@/lib/require-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    await requireAuth();
 
     const campaign = await request.json();
 
@@ -31,10 +28,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     return NextResponse.json(
       { error: error.message || 'Failed to generate Excel file' },
       { status: 500 }
     );
   }
 }
-

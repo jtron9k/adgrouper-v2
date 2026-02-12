@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAIModels, getGeminiModels, getClaudeModels } from '@/lib/providers';
 import { getApiKey } from '@/lib/api-keys';
-import { getSession } from '@/lib/session';
+import { requireAuth, UnauthorizedError } from '@/lib/require-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    await requireAuth();
 
     const { provider } = await request.json();
 
@@ -42,13 +39,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ models });
   } catch (error: any) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     return NextResponse.json(
       { error: error.message || 'Failed to fetch models' },
       { status: 500 }
     );
   }
 }
-
 
 
 

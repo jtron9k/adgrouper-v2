@@ -2,14 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractMultipleLandingPages, scrapeAndExtractMultipleLandingPages } from '@/lib/firecrawl';
 import { AIProvider } from '@/types';
 import { getApiKey } from '@/lib/api-keys';
-import { getSession } from '@/lib/session';
+import { requireAuth, UnauthorizedError } from '@/lib/require-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    await requireAuth();
 
     const { urls, extractionPrompt, provider } = await request.json();
 
@@ -68,13 +65,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: results });
   } catch (error: any) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     return NextResponse.json(
       { error: error.message || 'Failed to extract landing pages' },
       { status: 500 }
     );
   }
 }
-
 
 
 
