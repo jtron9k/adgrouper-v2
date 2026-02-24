@@ -11,7 +11,7 @@
     "version": "node scripts/get-version.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.20.0",
+    "@anthropic-ai/sdk": "^0.78.0",
     "@google/generative-ai": "^0.21.0",
     "@mendable/firecrawl-js": "^4.7.0",
     "@supabase/ssr": "^0.8.0",

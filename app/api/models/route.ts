@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
         models = await getGeminiModels(geminiKey);
         break;
       case 'claude':
-        models = getClaudeModels();
+        const claudeKey = await getApiKey('claude');
+        models = await getClaudeModels(claudeKey);
         break;
       default:
         return NextResponse.json(

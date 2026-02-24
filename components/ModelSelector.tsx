@@ -17,20 +17,6 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const loadClaudeModels = () => {
-    // Latest Claude models from https://platform.claude.com/docs/en/about-claude/models/overview
-    const claudeModels = [
-      'claude-sonnet-4-5-20250929',
-      'claude-haiku-4-5-20251001',
-      'claude-opus-4-5-20251101',
-      'claude-opus-4-1-20250805',
-    ];
-    setModels(claudeModels);
-    if (!selectedModel && claudeModels.length > 0) {
-      setSelectedModel(claudeModels[0]);
-    }
-  };
-
   // Load saved provider and model from localStorage
   useEffect(() => {
     const savedProvider = localStorage.getItem('selectedProvider') as 'openai' | 'gemini' | 'claude' | null;
@@ -39,17 +25,9 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
     if (savedProvider) {
       setProvider(savedProvider);
       setSelectedModel(savedModel);
-      
-      if (savedProvider === 'claude') {
-        // Load Claude models immediately
-        loadClaudeModels();
-      } else if (savedModel) {
-        // For OpenAI/Gemini, fetch models if we have a saved model
-        fetchModels(savedProvider);
-      }
+      fetchModels(savedProvider);
     } else {
-      // Load Claude models by default
-      loadClaudeModels();
+      fetchModels('openai');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -59,13 +37,7 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
     setModels([]);
     setSelectedModel('');
     setError('');
-    
-    if (newProvider === 'claude') {
-      loadClaudeModels();
-    } else {
-      // Auto-fetch models for OpenAI and Gemini
-      fetchModels(newProvider);
-    }
+    fetchModels(newProvider);
   };
 
   const fetchModels = async (providerToFetch?: 'openai' | 'gemini' | 'claude') => {
@@ -104,6 +76,12 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
           const openaiDefault = data.models.find((m: string) => m === 'gpt-5.1');
           if (openaiDefault) {
             defaultModel = openaiDefault;
+          }
+        } else if (targetProvider === 'claude') {
+          // Default to claude-sonnet-4-5 if available
+          const claudeDefault = data.models.find((m: string) => m.startsWith('claude-sonnet-4-5'));
+          if (claudeDefault) {
+            defaultModel = claudeDefault;
           }
         }
         
@@ -182,7 +160,7 @@ export default function ModelSelector({ onSelect }: ModelSelectorProps) {
             </div>
           </div>
 
-          {provider !== 'claude' && models.length === 0 && !loading && (
+          {models.length === 0 && !loading && !error && (
             <div className="text-center">
               <button
                 onClick={() => fetchModels()}

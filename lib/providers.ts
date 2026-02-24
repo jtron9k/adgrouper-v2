@@ -52,14 +52,13 @@ export async function getGeminiModels(apiKey: string): Promise<string[]> {
   ];
 }
 
-export function getClaudeModels(): string[] {
-  // Claude models are hardcoded per requirements - latest models from https://platform.claude.com/docs/en/about-claude/models/overview
-  return [
-    'claude-sonnet-4-5-20250929',
-    'claude-haiku-4-5-20251001',
-    'claude-opus-4-5-20251101',
-    'claude-opus-4-1-20250805',
-  ];
+export async function getClaudeModels(apiKey: string): Promise<string[]> {
+  const anthropic = new Anthropic({ apiKey });
+  const response = await anthropic.models.list({ limit: 100 });
+  return response.data
+    .map((model: { id: string }) => model.id)
+    .filter((id: string) => id.startsWith('claude-'))
+    .sort();
 }
 
 export async function callLLM(
