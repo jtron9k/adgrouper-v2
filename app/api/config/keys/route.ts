@@ -31,7 +31,6 @@ export async function GET(_request: NextRequest) {
     });
 
     return NextResponse.json({
-      firecrawl: keys.firecrawl || '',
       openai: keys.openai || '',
       gemini: keys.gemini || '',
       claude: keys.claude || '',

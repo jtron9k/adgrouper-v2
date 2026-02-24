@@ -55,7 +55,7 @@ Custom HMAC-SHA256 signed session cookies (`app_session`, 7-day expiry). No Supa
 
 ### Data Pipeline
 
-1. `/api/firecrawl` — Scrape landing pages (Firecrawl scrape + LLM extraction, or legacy extract endpoint)
+1. `/api/scrape` — Scrape landing pages and generate LLM-powered summaries
 2. `/api/group-keywords` — Group keywords into tightly themed ad groups (TTAGs)
 3. `/api/generate-ads` — Generate headlines/descriptions per ad group
 4. `/api/suggest-keywords` — Suggest additional keywords for an ad group

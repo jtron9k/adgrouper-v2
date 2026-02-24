@@ -4,10 +4,6 @@ export interface AIProvider {
   model: string;
 }
 
-export interface FirecrawlConfig {
-  apiKey: string;
-}
-
 export interface LandingPageData {
   url: string;
   title: string;
@@ -34,7 +30,6 @@ export interface Campaign {
   name: string;
   goal: string;
   provider: AIProvider;
-  firecrawlConfig: FirecrawlConfig;
   landingPageUrls: string[];
   keywords: string[];
   adgroups: Adgroup[];
@@ -43,15 +38,16 @@ export interface Campaign {
 }
 
 export interface PromptTemplates {
-  firecrawl: string;
+  extraction: string;
   keywordGrouping: string;
   adCopy: string;
   keywordSuggestion: string;
 }
 
 export interface ProgressState {
-  step: 'idle' | 'firecrawl' | 'grouping' | 'finalizing';
+  step: 'idle' | 'scraping' | 'grouping' | 'finalizing';
   message: string;
+  detail?: string;
   current?: number;
   total?: number;
 }

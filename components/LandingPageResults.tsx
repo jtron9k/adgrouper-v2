@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { LandingPageData } from '@/types';
 
-interface FirecrawlResultsProps {
+interface LandingPageResultsProps {
   landingPageData: LandingPageData[];
 }
 
@@ -27,7 +27,7 @@ function ExternalLinkIcon() {
   );
 }
 
-export default function FirecrawlResults({ landingPageData }: FirecrawlResultsProps) {
+export default function LandingPageResults({ landingPageData }: LandingPageResultsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (landingPageData.length === 0) return null;

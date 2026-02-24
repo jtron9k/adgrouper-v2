@@ -1,7 +1,7 @@
 import { LandingPageData, PromptTemplates } from '@/types';
 
 export const defaultPrompts: PromptTemplates = {
-  firecrawl: `You are an expert Conversion Copywriter and SEO Strategist with extremely high standards for content relevance. Your task is to analyze raw webpage text and distill it into a high-impact summary that isolates the specific value proposition for a potential customer.
+  extraction: `You are an expert Conversion Copywriter and SEO Strategist with extremely high standards for content relevance. Your task is to analyze raw webpage text and distill it into a high-impact summary that isolates the specific value proposition for a potential customer.
 
 CRITICAL RULES - FOLLOW EXACTLY:
 

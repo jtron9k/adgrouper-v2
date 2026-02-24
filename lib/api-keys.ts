@@ -1,6 +1,6 @@
 import { createAdminSupabaseClient } from './supabase-server';
 
-export type ApiKeyType = 'firecrawl' | 'openai' | 'gemini' | 'claude';
+export type ApiKeyType = 'openai' | 'gemini' | 'claude';
 
 /**
  * Fetches an API key from Supabase by key type.
@@ -27,13 +27,12 @@ export async function getApiKey(keyType: ApiKeyType): Promise<string> {
  * Returns an object with all key types.
  */
 export async function getAllApiKeys(): Promise<{
-  firecrawl: string;
   openai: string;
   gemini: string;
   claude: string;
 }> {
   const supabase = createAdminSupabaseClient();
-  
+
   const { data, error } = await supabase
     .from('api_keys')
     .select('key_type, api_key');
@@ -48,7 +47,6 @@ export async function getAllApiKeys(): Promise<{
   });
 
   return {
-    firecrawl: keys.firecrawl || '',
     openai: keys.openai || '',
     gemini: keys.gemini || '',
     claude: keys.claude || '',

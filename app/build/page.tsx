@@ -52,7 +52,13 @@ export default function BuildPage() {
           setUrlsText(campaignData.landingPageUrls?.join('\n') || '');
           setKeywordsText(campaignData.keywords?.join('\n') || '');
           if (campaignData.prompts) {
-            setPrompts(campaignData.prompts);
+            const restored = campaignData.prompts as any;
+            // Migrate old 'firecrawl' key from historical snapshots
+            setPrompts({
+              ...defaultPrompts,
+              ...campaignData.prompts,
+              extraction: restored.extraction || restored.firecrawl || defaultPrompts.extraction,
+            });
           }
         } catch (error) {
           console.error('Failed to restore campaign data:', error);
@@ -120,33 +126,40 @@ export default function BuildPage() {
 
     try {
       // Step 1: Firecrawl scraping and extraction
+      const urlDomains = validUrls.map(u => { try { return new URL(u).hostname; } catch { return u; } });
       setProgress({
-        step: 'firecrawl',
-        message: 'Scraping landing pages and generating summaries...',
+        step: 'scraping',
+        message: 'Scraping landing pages...',
+        detail: `Processing ${validUrls.length} URL${validUrls.length > 1 ? 's' : ''}: ${urlDomains.join(', ')}`,
+        current: 1,
+        total: 3,
       });
 
-      const firecrawlResponse = await fetch('/api/firecrawl', {
+      const scrapeResponse = await fetch('/api/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           urls: validUrls,
-          extractionPrompt: prompts.firecrawl,
+          extractionPrompt: prompts.extraction,
           provider,
         }),
       });
 
-      if (!firecrawlResponse.ok) {
-        const errorData = await firecrawlResponse.json();
+      if (!scrapeResponse.ok) {
+        const errorData = await scrapeResponse.json();
         throw new Error(errorData.error || 'Failed to extract landing pages');
       }
 
-      const firecrawlData = await firecrawlResponse.json();
-      const landingPageData: LandingPageData[] = firecrawlData.data;
+      const scrapeData = await scrapeResponse.json();
+      const landingPageData: LandingPageData[] = scrapeData.data;
 
       // Step 2: Keyword grouping
       setProgress({
         step: 'grouping',
-        message: 'Analyzing keywords and creating adgroups...',
+        message: 'Grouping keywords into ad groups...',
+        detail: `Analyzing ${validKeywords.length} keywords across ${landingPageData.length} landing page${landingPageData.length > 1 ? 's' : ''}`,
+        current: 2,
+        total: 3,
       });
 
       const groupingResponse = await fetch('/api/group-keywords', {
@@ -168,14 +181,21 @@ export default function BuildPage() {
 
       const groupingData = await groupingResponse.json();
 
-      // Step 3: Generate ads for each adgroup
-      setProgress({
-        step: 'finalizing',
-        message: 'Generating ad copy...',
-      });
+      // Step 3: Generate ads for each adgroup (sequential for progress tracking)
+      const adgroupsWithAds = [];
+      const totalAdgroups = groupingData.adgroups.length;
 
-      const adgroupsWithAds = await Promise.all(
-        groupingData.adgroups.map(async (adgroup: any) => {
+      for (let i = 0; i < totalAdgroups; i++) {
+        const adgroup = groupingData.adgroups[i];
+        setProgress({
+          step: 'finalizing',
+          message: `Generating ad copy (${i + 1} of ${totalAdgroups})...`,
+          detail: adgroup.name,
+          current: 3,
+          total: 3,
+        });
+
+        try {
           const adsResponse = await fetch('/api/generate-ads', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -191,28 +211,34 @@ export default function BuildPage() {
           if (!adsResponse.ok) {
             const errorData = await adsResponse.json();
             console.error(`Failed to generate ads for ${adgroup.name}:`, errorData);
-            return {
+            adgroupsWithAds.push({
               ...adgroup,
               headlines: ['', '', '', '', '', ''],
               descriptions: ['', '', ''],
-            };
+            });
+          } else {
+            const adsData = await adsResponse.json();
+            adgroupsWithAds.push({
+              ...adgroup,
+              headlines: adsData.headlines || ['', '', '', '', '', ''],
+              descriptions: adsData.descriptions || ['', '', ''],
+            });
           }
-
-          const adsData = await adsResponse.json();
-          return {
+        } catch (adError) {
+          console.error(`Failed to generate ads for ${adgroup.name}:`, adError);
+          adgroupsWithAds.push({
             ...adgroup,
-            headlines: adsData.headlines || ['', '', '', '', '', ''],
-            descriptions: adsData.descriptions || ['', '', ''],
-          };
-        })
-      );
+            headlines: ['', '', '', '', '', ''],
+            descriptions: ['', '', ''],
+          });
+        }
+      }
 
       // Store results and navigate
       const campaignData: Campaign = {
         name: campaignName,
         goal: campaignGoal,
         provider: provider!,
-        firecrawlConfig: { apiKey: '' }, // API keys are stored server-side, not in client data
         landingPageUrls: validUrls,
         keywords: validKeywords,
         adgroups: adgroupsWithAds,
@@ -376,8 +402,8 @@ export default function BuildPage() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Edit Prompts (Optional)</h3>
               <PromptEditor
                 label="Landing Page Summary Prompt"
-                value={prompts.firecrawl}
-                onChange={(value) => setPrompts({ ...prompts, firecrawl: value })}
+                value={prompts.extraction}
+                onChange={(value) => setPrompts({ ...prompts, extraction: value })}
               />
               <PromptEditor
                 label="Keyword Grouping Prompt"

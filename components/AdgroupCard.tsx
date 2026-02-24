@@ -2,7 +2,7 @@
 
 import { Adgroup } from '@/types';
 import KeywordList from './KeywordList';
-import FirecrawlResults from './FirecrawlResults';
+import LandingPageResults from './LandingPageResults';
 import EditableAdCopy from './EditableAdCopy';
 
 interface AdgroupCardProps {
@@ -64,7 +64,7 @@ export default function AdgroupCard({
         </button>
       </div>
 
-      <FirecrawlResults landingPageData={adgroup.landingPageData} />
+      <LandingPageResults landingPageData={adgroup.landingPageData} />
 
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
