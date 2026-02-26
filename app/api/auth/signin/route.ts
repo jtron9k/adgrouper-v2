@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSessionToken, setSessionCookie } from '@/lib/auth-session';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { isEmailApproved } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,18 +17,8 @@ export async function POST(request: NextRequest) {
     // Normalize email (lowercase, trim)
     const normalizedEmail = email.toLowerCase().trim();
 
-    const supabase = await createServerSupabaseClient();
-
     // Check if email is approved
-    const { data: approvedEmail, error: emailError } = await supabase
-      .from('approved_emails')
-      .select('email')
-      .eq('email', normalizedEmail)
-      .single();
-
-    // Use generic error message regardless of why check failed
-    // This prevents information leakage about whether email exists in table
-    if (emailError || !approvedEmail) {
+    if (!isEmailApproved(normalizedEmail)) {
       return NextResponse.json(
         { error: 'This email is not approved. Please contact your administrator.' },
         { status: 401 }
@@ -43,7 +33,6 @@ export async function POST(request: NextRequest) {
     setSessionCookie(response, token);
     return response;
   } catch (error: any) {
-    // Catch any unexpected errors and return generic message
     return NextResponse.json(
       { error: 'An error occurred. Please try again later.' },
       { status: 500 }

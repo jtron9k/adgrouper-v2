@@ -31,8 +31,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch AI provider key from Supabase
-    const aiProviderKey = await getApiKey(provider.name as 'openai' | 'gemini' | 'claude');
+    const aiProviderKey = getApiKey(provider.name as 'openai' | 'gemini' | 'claude');
 
     const validatedProvider: AIProvider = {
       name: provider.name,

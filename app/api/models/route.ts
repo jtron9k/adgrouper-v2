@@ -20,15 +20,15 @@ export async function POST(request: NextRequest) {
 
     switch (provider) {
       case 'openai':
-        const openaiKey = await getApiKey('openai');
+        const openaiKey = getApiKey('openai');
         models = await getOpenAIModels(openaiKey);
         break;
       case 'gemini':
-        const geminiKey = await getApiKey('gemini');
+        const geminiKey = getApiKey('gemini');
         models = await getGeminiModels(geminiKey);
         break;
       case 'claude':
-        const claudeKey = await getApiKey('claude');
+        const claudeKey = getApiKey('claude');
         models = await getClaudeModels(claudeKey);
         break;
       default:

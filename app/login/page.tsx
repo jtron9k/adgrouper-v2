@@ -13,9 +13,17 @@ export default function LoginPage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/me', { cache: 'no-store' });
-        if (response.ok) {
+        const [authRes, setupRes] = await Promise.all([
+          fetch('/api/auth/me', { cache: 'no-store' }),
+          fetch('/api/setup/status', { cache: 'no-store' }),
+        ]);
+        if (authRes.ok) {
           router.push('/');
+          return;
+        }
+        const setupData = await setupRes.json();
+        if (setupData.needsSetup) {
+          router.push('/setup');
           return;
         }
       } catch {

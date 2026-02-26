@@ -42,6 +42,17 @@ export default function BuildPage() {
 
       setProvider(JSON.parse(savedProvider));
 
+      // Fetch server-side default prompts (falls back to hard-coded if fetch fails)
+      let serverDefaults = defaultPrompts;
+      try {
+        const promptsRes = await fetch('/api/admin/prompts');
+        if (promptsRes.ok) {
+          serverDefaults = await promptsRes.json();
+        }
+      } catch {
+        // keep hard-coded defaults
+      }
+
       // Check if we're restoring from history
       const savedCampaignData = sessionStorage.getItem('campaignData');
       if (savedCampaignData) {
@@ -51,18 +62,12 @@ export default function BuildPage() {
           setCampaignGoal(campaignData.goal || '');
           setUrlsText(campaignData.landingPageUrls?.join('\n') || '');
           setKeywordsText(campaignData.keywords?.join('\n') || '');
-          if (campaignData.prompts) {
-            const restored = campaignData.prompts as any;
-            // Migrate old 'firecrawl' key from historical snapshots
-            setPrompts({
-              ...defaultPrompts,
-              ...campaignData.prompts,
-              extraction: restored.extraction || restored.firecrawl || defaultPrompts.extraction,
-            });
-          }
+          setPrompts(campaignData.prompts ? { ...serverDefaults, ...campaignData.prompts } : serverDefaults);
         } catch (error) {
           console.error('Failed to restore campaign data:', error);
         }
+      } else {
+        setPrompts(serverDefaults);
       }
     };
 

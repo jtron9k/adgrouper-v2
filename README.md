@@ -1,292 +1,225 @@
 # Search Ads Campaign Builder
 
-An AI-powered web application that helps users create high-performing Google Ads campaigns by automatically crawling landing pages, grouping keywords into tightly themed ad groups, generating ad copy, and exporting results to Excel.
+An AI-powered web application that automates Google Ads campaign creation. It crawls your landing pages, groups keywords into tightly themed ad groups (TTAGs), generates compliant ad copy, and exports everything to Excel — all driven by your choice of OpenAI, Google Gemini, or Anthropic Claude.
+
+---
 
 ## Features
 
-- **Landing Page Analysis**: Automatically crawls and extracts key information from landing pages using Firecrawl.dev
-- **Intelligent Keyword Grouping**: Groups keywords into tightly themed ad groups (TTAGs) following Google Ads best practices
-- **AI-Powered Ad Copy Generation**: Creates compelling headlines and descriptions that comply with Google Ads character limits
-- **Keyword Suggestions**: Generates additional related keywords for existing ad groups
-- **Editable Ad Copy**: Edit generated ad copy with real-time character count validation
-- **Excel Export**: Export complete campaign structure to a single-tab XLSX file
-- **Multiple AI Providers**: Support for OpenAI, Google Gemini, and Anthropic Claude
+- **Landing Page Analysis** — Scrapes and summarizes landing pages using an AI prompt so the model understands each page's specific value proposition before grouping keywords
+- **Intelligent Keyword Grouping** — Groups keywords into tightly themed ad groups (TTAGs) following Google Ads best practices; each ad group maps to exactly one landing page and shares a single search intent
+- **AI-Powered Ad Copy** — Generates 6 headlines (≤30 chars) and 3 descriptions (≤90 chars) per ad group, keyword-aware and aligned to the landing page
+- **Keyword Suggestions** — Suggests additional closely related keywords for any existing ad group
+- **Inline Editing** — Edit headlines and descriptions directly in the results view with real-time character-count enforcement
+- **Excel Export** — One-click XLSX export of the complete campaign structure
+- **Campaign History** — Every run is saved to SQLite; restore any previous campaign to the build page to re-run or tweak
+- **Multiple AI Providers** — Switch between OpenAI, Google Gemini, and Anthropic Claude; models are fetched live from each provider's API
+- **Customizable Prompts** — Every prompt template (extraction, keyword grouping, ad copy, keyword suggestion) can be edited per-campaign on the build page
+- **Admin: Default Prompts** — Admins can set system-wide default prompts that all users start with; per-campaign edits still override them
+- **Admin: User Management** — Invite and manage approved users; assign admin or user roles
+- **Admin: API Key Management** — Store provider API keys in the database so they don't need to be in `.env.local` on every deployment
+- **Dark Mode** — Follows system preference via Tailwind's `media` strategy
+
+---
 
 ## Technology Stack
 
-- **Framework**: Next.js 14+ (App Router) with TypeScript
-- **Styling**: Tailwind CSS
-- **Excel Export**: xlsx library
-- **AI Providers**: 
-  - OpenAI (GPT models)
-  - Google Gemini
-  - Anthropic Claude
-- **Landing Page Extraction**: Firecrawl.dev API
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 14 App Router, TypeScript |
+| Styling | Tailwind CSS |
+| Database | SQLite via `better-sqlite3` |
+| Auth | Stateless HMAC-SHA256 signed session cookies (no external service) |
+| AI | OpenAI SDK, `@google/generative-ai`, Anthropic SDK |
+| Export | `xlsx` |
 
-## Installation
+---
+
+## Setup
 
 ### Prerequisites
 
-- Node.js 18+ and npm/yarn
-- Supabase account (for approved email list and data storage)
-- API keys for:
-  - One or more of: OpenAI, Google Gemini, or Anthropic Claude
-  - Firecrawl.dev
+- Node.js 18+
+- API key(s) for at least one of: OpenAI, Google Gemini, or Anthropic Claude
 
-**Important:** API keys must be configured in your Supabase database. See the [API Key Configuration](#api-key-configuration) section below.
+### 1. Clone and install
 
-### Local Setup
-
-1. Clone the repository:
 ```bash
 git clone https://github.com/jtron9k/adgrouper-v2.git
 cd adgrouper-v2
-```
-
-2. Install dependencies:
-```bash
 npm install
-# or
-yarn install
 ```
 
-3. Create a `.env.local` file with your Supabase credentials:
+### 2. Configure environment variables
+
+Create a `.env.local` file in the project root:
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
-AUTH_SESSION_SECRET=your-long-random-secret-here
+# Required — used to sign session cookies (min 32 random characters)
+AUTH_SESSION_SECRET=replace-with-a-long-random-secret-at-least-32-chars
+
+# AI provider keys — only set the ones you plan to use
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=AIza...
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Comma-separated list of approved email addresses
+# The first email in the list is automatically assigned the "admin" role
+APPROVED_EMAILS=you@example.com,colleague@example.com
 ```
 
-4. Add allowed users to `approved_emails` in Supabase (only listed emails can sign in)
+> **Note:** API keys can also be stored in the database via the Admin → Manage API Keys page after first login. Database values take precedence over `.env.local`.
 
-5. Configure API keys in Supabase (see [API Key Configuration](#api-key-configuration) section below)
+### 3. Run the development server
 
-6. Run the development server:
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-7. Open [http://localhost:3000](http://localhost:3000) in your browser
+Open [http://localhost:3000](http://localhost:3000). The SQLite database (`data/adgrouper.db`) and all tables are created automatically on first startup. Emails listed in `APPROVED_EMAILS` are seeded into the `approved_emails` table.
 
-### API Key Configuration
+### 4. Log in
 
-API keys are stored securely in your Supabase database and are never exposed to the client. You must configure them before using the application.
+Navigate to `/login` and enter one of the approved email addresses. No password is required — the app uses a simple email allowlist. You'll be redirected to the home page.
 
-1. **Create the `api_keys` table** in your Supabase database:
-   - Go to your Supabase dashboard
-   - Navigate to SQL Editor
-   - Run the SQL script from `supabase_migration_api_keys.sql` (or create the table manually)
+---
 
-2. **Add your API keys** to the `api_keys` table:
-   - Go to Table Editor → `api_keys`
-   - Insert rows with the following `key_type` values:
-     - `firecrawl` - Your Firecrawl.dev API key
-     - `openai` - Your OpenAI API key (optional, if using OpenAI)
-     - `gemini` - Your Google Gemini API key (optional, if using Gemini)
-     - `claude` - Your Anthropic Claude API key (optional, if using Claude)
+## Usage
 
-   Example SQL:
-   ```sql
-   INSERT INTO api_keys (key_type, api_key) VALUES
-     ('firecrawl', 'your-firecrawl-key-here'),
-     ('openai', 'your-openai-key-here'),
-     ('gemini', 'your-gemini-key-here'),
-     ('claude', 'your-claude-key-here')
-   ON CONFLICT (key_type) DO UPDATE SET api_key = EXCLUDED.api_key;
-   ```
+### Step 1 — Select provider and model
 
-3. **Verify Row Level Security (RLS)** is enabled:
-   - The table should have RLS enabled
-   - Server routes read keys with `SUPABASE_SERVICE_ROLE_KEY`
+Choose an AI provider (OpenAI, Gemini, or Claude), click **Load Models** to fetch available models, select one, then click **Continue**.
 
-**Note:** You only need to add keys for the providers you plan to use. At minimum, you need the `firecrawl` key.
+Your selection is saved in `localStorage` and persists between sessions.
 
-### Railway Deployment
+### Step 2 — Build your campaign
 
-See [RAILWAY.md](./RAILWAY.md) for detailed Railway deployment instructions.
+| Field | Notes |
+|---|---|
+| Campaign Name | Descriptive label (e.g., "Summer Shoe Sale 2025") |
+| Campaign Goal | One sentence describing your objective; included in every prompt |
+| Landing Page URLs | Up to 10 URLs, one per line, or upload a CSV |
+| Keywords | Up to 200 keywords, one per line, or upload a CSV |
+| Edit Prompts | Expand any of the 4 prompt editors to customize for this campaign |
 
-**Quick Setup:**
-1. Connect your GitHub repository to Railway
-2. Add these environment variables in Railway:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `AUTH_SESSION_SECRET`
-3. Deploy!
+Click **Submit**. The app runs three sequential steps with a progress indicator:
 
-**Important:** The app will fail with a 500 error if required auth or Supabase environment variables are not set.
+1. Scrapes and summarizes each landing page
+2. Groups keywords into ad groups
+3. Generates ad copy for each ad group
 
-## Usage Guide
+### Step 3 — Review and export
 
-### Step 1: Select AI Provider and Model
+- Edit any headline or description inline (character limits are enforced in real time)
+- Click **Suggest Keywords** on an ad group to add more closely related keywords
+- Click **Regenerate Ads** to re-run ad copy generation for an ad group
+- Remove keywords with the × button
+- Click **Export to Excel** to download the complete campaign as XLSX
 
-1. Choose your AI provider (OpenAI, Gemini, or Claude)
-2. For OpenAI and Gemini: Click "Load Models" to fetch available models (models load automatically when you switch providers)
-3. For Claude: Models are pre-loaded automatically
-4. Select your preferred model from the dropdown
-5. Click "Continue"
+### Campaign History
 
-**Note:** API keys are configured in Supabase and are not entered by users. Make sure you've added the appropriate API keys to your Supabase `api_keys` table before using the application.
+Visit `/history` to see all previous runs. Click **Restore** on any run to reload it into the build page with all original inputs and prompts.
 
-### Step 2: Build Your Campaign
+---
 
-1. **Campaign Name**: Enter a descriptive name (e.g., "Summer Shoe Sale 2025")
-2. **Campaign Goal**: Describe your campaign objective (e.g., "Drive sales of our summer shoe lineup for women age 25-44")
-3. **Landing Page URLs**: 
-   - Enter up to 10 URLs (one per line)
-   - URLs must start with `http://` or `https://`
-   - Or upload a single-column CSV file
-4. **Keywords**: 
-   - Enter up to 200 keywords (one per line)
-   - Or upload a single-column CSV file (assumes no header row)
-5. **Edit Prompts** (Optional): Expand and customize the prompts used for:
-   - Firecrawl extraction
-   - Keyword grouping
-   - Ad copy generation
-   - Keyword suggestions
-6. Click "Submit" to process
+## Admin
 
-The tool will:
-1. Crawl all landing pages and extract key information
-2. Group keywords into tightly themed ad groups
-3. Generate ad copy for each ad group
-4. Display results on the results page
+Admin features are accessible from the **Admin** dropdown in the navigation bar. Only users with the `admin` role can see or access these pages. The first email in `APPROVED_EMAILS` is assigned `admin` on first startup.
 
-### Step 3: Review and Export Results
+### Manage Users (`/admin/users`)
 
-1. **Review Ad Groups**: Each ad group card displays:
-   - Ad group name (theme-based)
-   - Associated keywords (with remove buttons)
-   - Landing page analysis (expandable)
-   - Generated ad copy (editable)
+- View all approved users and their roles
+- Add new approved email addresses
+- Change a user's role between `admin` and `user`
+- Remove users (they will be unable to log in)
 
-2. **Edit Ad Copy**: 
-   - Modify headlines and descriptions directly
-   - Character limits are enforced (30 chars for headlines, 90 for descriptions)
-   - Real-time character count display
+### Manage API Keys (`/admin/api-keys`)
 
-3. **Regenerate Ads**: Click "Regenerate Ads" to generate new ad copy for any ad group
+Store AI provider API keys in the database. This is useful for deployments where setting environment variables is inconvenient. Database values take precedence over `.env.local`.
 
-4. **Generate More Keywords**: Click "+ Generate More Keywords" to add 5-10 related keywords to an ad group
+### Manage Default Prompts (`/admin/prompts`)
 
-5. **Remove Keywords**: Click the × button on any keyword to remove it before export
+Edit the four system-wide prompt templates that all users see when starting a new campaign:
 
-6. **Export to Excel**: Click "Export to Excel" to download a formatted XLSX file with:
-   - Campaign name
-   - Ad group names
-   - Keywords
-   - Headlines (2 per ad group)
-   - Descriptions (3 per ad group)
-   - Landing page URLs
+- **Landing Page Summary Prompt** — How the AI summarizes each scraped page
+- **Keyword Grouping Prompt** — How keywords are grouped into ad groups
+- **Ad Copy Generation Prompt** — How headlines and descriptions are written
+- **Keyword Suggestion Prompt** — How additional keywords are suggested
 
-7. **Start Over**: Click "Start Over" to begin a new campaign
+Changes take effect immediately for all new campaigns. Users can still override any prompt per-campaign on the build page, and those overrides are saved with the campaign history.
 
-## API Endpoints
+---
 
-### `/api/models`
-- **Method**: POST
-- **Body**: `{ provider: string }`
-- **Returns**: List of available models for the provider
-- **Note**: API key is fetched server-side from Supabase
-
-### `/api/firecrawl`
-- **Method**: POST
-- **Body**: `{ urls: string[], extractionPrompt: string, provider?: AIProvider }`
-- **Returns**: Extracted landing page data
-- **Note**: Firecrawl API key is fetched server-side from Supabase
-
-### `/api/group-keywords`
-- **Method**: POST
-- **Body**: `{ keywords: string[], landingPageData: LandingPageData[], campaignGoal: string, groupingPrompt: string, provider: { name: string, model: string } }`
-- **Returns**: Grouped ad groups and irrelevant keywords
-- **Note**: Provider API key is fetched server-side from Supabase based on `provider.name`
-
-### `/api/suggest-keywords`
-- **Method**: POST
-- **Body**: `{ adgroupTheme: string, existingKeywords: string[], landingPageData: LandingPageData[], campaignGoal: string, suggestionPrompt: string, provider: { name: string, model: string } }`
-- **Returns**: Array of suggested keywords
-- **Note**: Provider API key is fetched server-side from Supabase
-
-### `/api/generate-ads`
-- **Method**: POST
-- **Body**: `{ adgroupData: Adgroup, landingPageData: LandingPageData[], campaignGoal: string, adCopyPrompt: string, provider: { name: string, model: string } }`
-- **Returns**: Headlines and descriptions
-- **Note**: Provider API key is fetched server-side from Supabase
-
-### `/api/export`
-- **Method**: POST
-- **Body**: `Campaign` object
-- **Returns**: Excel file download
-
-## Best Practices
-
-This tool implements Google Ads best practices based on industry-leading resources:
-
-### Keyword Grouping
-- **Tightly Themed Ad Groups (TTAGs)**: Keywords are grouped into small, semantically related clusters sharing the same user intent
-- **Optimal Structure**: 7-10 ad groups per campaign, each containing 15-20 closely related keywords
-- **Ruthless Efficiency**: Keywords that don't fit any ad group/landing page combination are marked as irrelevant
-
-### Ad Copy
-- **Headlines**: Max 30 characters, incorporate keywords naturally, include USPs
-- **Descriptions**: Max 90 characters, clear value proposition, strong CTAs
-- **Alignment**: Ad copy matches landing page messaging and value propositions
-
-### References
-- [The Ultimate Guide to Your Google Ads Account Structure - PPC Hero](https://ppchero.com/the-ultimate-guide-to-your-google-ads-account-structure/)
-- [The 2025 Guide to the Perfect Google Ads Account Structure - WordStream](https://www.wordstream.com/blog/google-ads-account-structure)
-- [How to Write Google Ads Like a Pro - WordStream](https://www.wordstream.com/blog/google-ads-copy)
-
-## Project Structure
+## Architecture
 
 ```
-/app
-  /page.tsx                    # Page 1: Model selection
-  /build/page.tsx              # Page 2: Campaign builder
-  /results/page.tsx            # Page 3: Results display
-  /api                         # API routes
-/lib                           # Utility functions
-/components                    # React components
-/types.ts                      # TypeScript type definitions
+app/
+  api/           Route handlers (all require auth)
+  admin/         Admin pages (require admin role)
+  build/         Campaign input form
+  results/       Ad group review and export
+  history/       Campaign run history
+  login/         Email login form
+components/      Client-side React components
+lib/
+  auth-session   HMAC session token creation/verification
+  require-auth   requireAuth() / requireAdmin() helpers
+  db             SQLite singleton, schema init, all query helpers
+  providers      Unified callLLM() interface
+  prompts        Hard-coded default prompt templates
+  api-keys       Env var + DB key resolution
+types.ts         Shared TypeScript interfaces
+data/            SQLite DB file (git-ignored, created at runtime)
 ```
+
+### Auth
+
+Session cookies are HMAC-SHA256 signed with `AUTH_SESSION_SECRET`. No external auth service. User IDs are deterministic SHA-256 hashes of email addresses.
+
+### Database tables
+
+| Table | Purpose |
+|---|---|
+| `approved_emails` | Email allowlist with roles |
+| `runs` | Campaign run metadata |
+| `snapshots` | Full campaign state as JSON (FK → runs) |
+| `api_keys` | Provider API keys stored in DB |
+| `default_prompts` | Admin-customized prompt defaults |
+
+---
+
+## Development
+
+```bash
+npm run dev     # Start dev server
+npm run build   # Production build
+npm run lint    # ESLint
+npm start       # Start production server
+```
+
+No test framework is configured.
+
+---
 
 ## Troubleshooting
 
-### API Key Issues
-- **Keys not found**: Ensure you've added API keys to the `api_keys` table in Supabase
-- **Invalid keys**: Verify your API keys are correct in Supabase and have sufficient credits/quota
-- **For OpenAI**: Check that your API key has access to the selected model
-- **For Claude**: Verify your API key is active on Anthropic's platform
-- **RLS errors**: Ensure `SUPABASE_SERVICE_ROLE_KEY` is set in your environment
+**Login fails / 401 errors**
+- Confirm the email is in `APPROVED_EMAILS` and matches exactly
+- Check that `AUTH_SESSION_SECRET` is set and at least 32 characters
 
-### Firecrawl Errors
-- Verify your Firecrawl API key is correct in Supabase
-- Check that URLs are publicly accessible (not behind authentication)
-- Some URLs may take longer to process - be patient
+**No models load**
+- Verify at least one API key is set (env var or via Admin → Manage API Keys)
+- Check the browser console and server logs for the specific error
 
-### Keyword Grouping Issues
-- If keywords aren't grouping as expected, try editing the keyword grouping prompt
-- Ensure your campaign goal is clear and specific
-- Make sure landing pages are relevant to your keywords
+**Keywords not grouping as expected**
+- Try editing the keyword grouping prompt on the build page or in Admin → Manage Default Prompts
+- Make the campaign goal more specific
 
-### Ad Copy Generation
-- If ad copy doesn't meet character limits, the tool will truncate automatically
-- Edit ad copy manually if needed to better match your brand voice
-- Use "Regenerate Ads" to get alternative versions
+**Excel export is empty or malformed**
+- Ensure at least one ad group has been generated before exporting
 
-## Contributing
-
-This is a private project. For issues or suggestions, please contact the repository owner.
+---
 
 ## License
 
 [Add your license here]
-
-## Support
-
-For questions or issues, please open an issue on the GitHub repository.
-
-

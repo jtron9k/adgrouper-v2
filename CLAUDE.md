@@ -16,15 +16,15 @@ There is no test framework configured in this project.
 ## Environment Variables
 
 Required in `.env.local`:
-- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase client config
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase admin access (server-side only)
 - `AUTH_SESSION_SECRET` — HMAC signing secret for session cookies (min 32 bytes)
-
-API keys (OpenAI, Gemini, Claude, Firecrawl) are stored in the Supabase `api_keys` table, not in env vars.
+- `OPENAI_API_KEY` — OpenAI API key
+- `GEMINI_API_KEY` — Google Gemini API key
+- `ANTHROPIC_API_KEY` — Anthropic Claude API key
+- `APPROVED_EMAILS` — Comma-separated email whitelist (seeded into SQLite on first run)
 
 ## Architecture
 
-**Next.js 14 App Router** with TypeScript, Tailwind CSS, and Supabase (PostgreSQL).
+**Next.js 14 App Router** with TypeScript, Tailwind CSS, and SQLite (`better-sqlite3`).
 
 ### App Flow
 
@@ -38,12 +38,12 @@ API keys (OpenAI, Gemini, Claude, Firecrawl) are stored in the Supabase `api_key
 
 - `app/api/` — Route handlers (all protected via `requireAuth()`)
 - `components/` — Client-side React components
-- `lib/` — Shared utilities (auth, AI providers, prompts, Supabase clients, Excel export)
+- `lib/` — Shared utilities (auth, AI providers, prompts, db, Excel export)
 - `types.ts` — All TypeScript interfaces (`Campaign`, `Adgroup`, `Keyword`, `Run`, `Snapshot`, etc.)
 
 ### Auth System
 
-Custom HMAC-SHA256 signed session cookies (`app_session`, 7-day expiry). No Supabase Auth.
+Custom HMAC-SHA256 signed session cookies (`app_session`, 7-day expiry). No external auth service.
 
 - `lib/auth-session.ts` — Token creation/verification with timing-safe comparison
 - `lib/require-auth.ts` — Middleware helper that validates session and returns `{email, userId}`
@@ -51,7 +51,7 @@ Custom HMAC-SHA256 signed session cookies (`app_session`, 7-day expiry). No Supa
 
 ### AI Provider Integration
 
-`lib/providers.ts` exports a unified `callLLM(provider, systemPrompt, userPrompt)` interface that dispatches to OpenAI, Gemini, or Claude SDKs. API keys are fetched server-side from Supabase via `lib/api-keys.ts`.
+`lib/providers.ts` exports a unified `callLLM(provider, systemPrompt, userPrompt)` interface that dispatches to OpenAI, Gemini, or Claude SDKs. API keys are read server-side from environment variables via `lib/api-keys.ts`.
 
 ### Data Pipeline
 
@@ -65,20 +65,20 @@ Custom HMAC-SHA256 signed session cookies (`app_session`, 7-day expiry). No Supa
 
 - `sessionStorage` for in-progress campaign data between pages
 - `localStorage` for user preferences (selected provider/model)
-- Supabase `runs` + `snapshots` tables for persistent history
+- SQLite `runs` + `snapshots` tables for persistent history
 
-### Database Tables
+### Database
 
-- `approved_emails` — Email whitelist (PK: email)
-- `api_keys` — Server-side API key storage (key_type: firecrawl/openai/gemini/claude)
+SQLite via `better-sqlite3`. DB file lives at `data/adgrouper.db` (git-ignored). Schema and all query helpers are in `lib/db.ts`.
+
+Tables:
+- `approved_emails` — Email whitelist (seeded from `APPROVED_EMAILS` env var on startup)
 - `runs` — Campaign run metadata (user_id, campaign_name, stage)
-- `snapshots` — Full campaign state as JSONB (references runs)
-
-RLS enabled on all tables. Migration SQL files are at the project root (`supabase_migration_*.sql`).
+- `snapshots` — Full campaign state as JSON text (references runs, cascades on delete)
 
 ### Prompt System
 
-Default prompts live in `lib/prompts.ts`. Users can customize all four prompt templates (firecrawl extraction, keyword grouping, ad copy, keyword suggestion) via the `PromptEditor` component on the build page.
+Default prompts live in `lib/prompts.ts`. Users can customize all four prompt templates (landing page extraction, keyword grouping, ad copy, keyword suggestion) via the `PromptEditor` component on the build page.
 
 ## Style
 

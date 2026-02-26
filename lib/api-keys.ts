@@ -1,59 +1,41 @@
-import { createAdminSupabaseClient } from './supabase-server';
-
 export type ApiKeyType = 'openai' | 'gemini' | 'claude';
 
+const ENV_MAP: Record<ApiKeyType, string> = {
+  openai: 'OPENAI_API_KEY',
+  gemini: 'GEMINI_API_KEY',
+  claude: 'ANTHROPIC_API_KEY',
+};
+
 /**
- * Fetches an API key from Supabase by key type.
- * This function should only be called server-side from authenticated routes.
+ * Returns an API key, checking the DB first then falling back to env vars.
+ * Throws if neither source has a value.
  */
-export async function getApiKey(keyType: ApiKeyType): Promise<string> {
-  const supabase = createAdminSupabaseClient();
-  
-  const { data, error } = await supabase
-    .from('api_keys')
-    .select('api_key')
-    .eq('key_type', keyType)
-    .single();
+export function getApiKey(keyType: ApiKeyType): string {
+  // Inline import to avoid circular dep (api-keys ← db ← api-keys)
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getApiKeyFromDb } = require('./db') as typeof import('./db');
+  const dbValue = getApiKeyFromDb(keyType);
+  if (dbValue) return dbValue;
 
-  if (error || !data) {
-    throw new Error(`Failed to fetch ${keyType} API key: ${error?.message || 'Key not found'}`);
-  }
+  const envValue = process.env[ENV_MAP[keyType]];
+  if (envValue) return envValue;
 
-  return data.api_key;
+  throw new Error(
+    `No API key configured for "${keyType}". Add it via the setup page or set ${ENV_MAP[keyType]} in .env.local.`
+  );
 }
 
 /**
- * Fetches all API keys from Supabase.
- * Returns an object with all key types.
+ * Returns presence booleans for all three LLM API keys.
+ * Checks DB first, then env vars. Does not return the actual key values.
  */
-export async function getAllApiKeys(): Promise<{
-  openai: string;
-  gemini: string;
-  claude: string;
-}> {
-  const supabase = createAdminSupabaseClient();
-
-  const { data, error } = await supabase
-    .from('api_keys')
-    .select('key_type, api_key');
-
-  if (error || !data) {
-    throw new Error(`Failed to fetch API keys: ${error?.message || 'Keys not found'}`);
+export function getAllApiKeyPresence(): { openai: boolean; gemini: boolean; claude: boolean } {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getApiKeyFromDb } = require('./db') as typeof import('./db');
+  const keys: ApiKeyType[] = ['openai', 'gemini', 'claude'];
+  const result = {} as { openai: boolean; gemini: boolean; claude: boolean };
+  for (const key of keys) {
+    result[key] = !!(getApiKeyFromDb(key) || process.env[ENV_MAP[key]]);
   }
-
-  const keys: Record<string, string> = {};
-  data.forEach((row: { key_type: string; api_key: string }) => {
-    keys[row.key_type] = row.api_key;
-  });
-
-  return {
-    openai: keys.openai || '',
-    gemini: keys.gemini || '',
-    claude: keys.claude || '',
-  };
+  return result;
 }
-
-
-
-
-

@@ -1,10 +1,18 @@
 import { createHash } from 'crypto';
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE_NAME, verifySessionToken } from '@/lib/auth-session';
+import { getUserRole } from '@/lib/db';
 
 export class UnauthorizedError extends Error {
   constructor() {
     super('Unauthorized');
+  }
+}
+
+export class ForbiddenError extends Error {
+  constructor(message = 'Forbidden') {
+    super(message);
+    this.name = 'ForbiddenError';
   }
 }
 
@@ -22,6 +30,15 @@ export async function requireAuth(): Promise<{ email: string }> {
   }
 
   return { email: session.email };
+}
+
+export async function requireAdmin(): Promise<{ email: string }> {
+  const session = await requireAuth();
+  const role = getUserRole(session.email);
+  if (role !== 'admin') {
+    throw new ForbiddenError('Admin access required');
+  }
+  return session;
 }
 
 export function deterministicUserIdFromEmail(email: string): string {

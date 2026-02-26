@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    serverComponentsExternalPackages: ['playwright-core'],
+    serverComponentsExternalPackages: ['playwright-core', 'better-sqlite3'],
   },
 }
 

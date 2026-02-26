@@ -1,14 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  // Check for required environment variables
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY)
-  ) {
-    console.error(
-      'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and either NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY'
-    );
+  const { pathname } = request.nextUrl;
+  const isSetupRoute =
+    pathname.startsWith('/setup') || pathname.startsWith('/api/setup/');
+
+  if (!process.env.AUTH_SESSION_SECRET) {
+    if (isSetupRoute) return NextResponse.next({ request });
+    console.error('Missing AUTH_SESSION_SECRET environment variable');
     return NextResponse.json(
       { error: 'Server configuration error. Please contact support.' },
       { status: 500 }

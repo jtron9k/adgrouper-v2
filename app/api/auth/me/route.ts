@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { UnauthorizedError, requireAuth } from '@/lib/require-auth';
+import { getUserRole } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -7,6 +8,7 @@ export async function GET() {
     return NextResponse.json({
       authenticated: true,
       email: session.email,
+      role: getUserRole(session.email),
     });
   } catch (error) {
     if (error instanceof UnauthorizedError) {
