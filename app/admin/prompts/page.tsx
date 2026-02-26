@@ -83,7 +83,7 @@ export default function AdminPromptsPage() {
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
           <PromptEditor
             label="Landing Page Summary Prompt"
             value={prompts.extraction}
@@ -108,7 +108,7 @@ export default function AdminPromptsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full mt-4 bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 font-medium text-sm transition-colors"
+            className="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 font-medium text-sm transition-colors"
           >
             {saving ? 'Saving...' : 'Save Prompts'}
           </button>
